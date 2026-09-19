@@ -134,12 +134,14 @@ passport.use(new GoogleStrategy({
             return done(null, updatedUser.rows[0]);
         }
 
-        const newUser = await pool.query(
-            'INSERT INTO users (fullname, email, password, profile_picture) VALUES ($1, $2, $3, $4) RETURNING *',
-            [fullname, email, 'GOOGLE_AUTH_USER', picture]
+const newUser = await pool.query(
+            'INSERT INTO users (fullname, email, profile_picture) VALUES ($1, $2, $3) RETURNING *',
+            [fullname, email, picture]
         );
         return done(null, newUser.rows[0]);
     } catch (err) {
+        console.error("GOOGLE AUTH XƏTASI:", err.message); // Xətanın səbəbini konsola yazacaq
+        console.error("Ətraflı detal:", err);
         return done(err, null);
     }
 }));
@@ -176,18 +178,86 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res, next) => {
+
     const { email, password } = req.body;
-    if (!email || !password) return res.render('login', { errorMessage: 'E-poçt və şifrə daxil edilməlidir!' });
+
+    console.log('================================');
+    console.log('LOGIN REQUEST');
+    console.log('Email:', email);
+    console.log('================================');
+
+    if (!email || !password) {
+        return res.render('login', {
+            errorMessage: 'E-poçt və şifrə daxil edilməlidir!'
+        });
+    }
+
     try {
-        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userResult.rows.length === 0) return res.render('login', { errorMessage: 'Bu e-poçt ilə qeydiyyat tapılmadı!' });
+
+        const userResult = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+        );
+
+        console.log('User tapıldı:', userResult.rows.length);
+
+        if (userResult.rows.length === 0) {
+
+            return res.render('login', {
+                errorMessage: 'Bu e-poçt ilə qeydiyyat tapılmadı!'
+            });
+        }
+
         const user = userResult.rows[0];
-        if (user.password === 'GOOGLE_AUTH_USER') return res.render('login', { errorMessage: 'Bu hesab Google ilə yaradılıb.' });
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.render('login', { errorMessage: 'Şifrə yanlışdır!' });
-        req.logIn(user, (err) => err ? next(err) : res.redirect('/chat'));
+
+        console.log('User ID:', user.id);
+        console.log('User email:', user.email);
+
+        if (user.password === 'GOOGLE_AUTH_USER') {
+
+            return res.render('login', {
+                errorMessage: 'Bu hesab Google ilə yaradılıb.'
+            });
+        }
+
+        const isMatch = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        console.log('Password match:', isMatch);
+
+        if (!isMatch) {
+
+            return res.render('login', {
+                errorMessage: 'Şifrə yanlışdır!'
+            });
+        }
+
+        req.logIn(user, (err) => {
+
+            if (err) {
+
+                console.error('❌ req.logIn XƏTASI:');
+                console.error(err);
+
+                return next(err);
+            }
+
+            console.log('✅ Login uğurlu oldu');
+
+            return res.redirect('/chat');
+        });
+
     } catch (err) {
-        res.render('login', { errorMessage: 'Xəta baş verdi, yenidən yoxlayın.' });
+
+        console.error('❌ LOGIN XƏTASI:');
+        console.error(err);
+
+        return res.status(500).send(`
+            <h1>Internal Server Error</h1>
+            <pre>${err.stack || err.message}</pre>
+        `);
     }
 });
 

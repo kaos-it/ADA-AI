@@ -116,7 +116,7 @@ async function ensureAdmin(req, res, next) {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback'
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://orca-app-prkkq.ondigitalocean.app/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
@@ -1315,6 +1315,6 @@ function getStars(rating) {
 
 // --- SERVER LAUNCH ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server işləyir: http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server qlobal olaraq işləyir: port ${PORT}`);
 });

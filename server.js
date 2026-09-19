@@ -1315,9 +1315,8 @@ function getStars(rating) {
 }
 
 
-
-// --- SERVER LAUNCH ---
+// --- 7. SERVER LAUNCH (Həm lokal, həm qlobal serverlər üçün uyğun) ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server işləyir: http://localhost:${PORT}`);
+    console.log(`Server işləyir: port ${PORT}`);
 });

@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADA AI — Admin Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Markdown Parser & DOMPurify (XSS Təhlükəsizliyi üçün) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="/js/language.js"></script>
+
+  <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
+
+    <style>
+:root {
+            --bg: #080b12;
+            --bg-2: #0d111a;
+            --surface: #111722;
+            --surface-2: #151c29;
+            --surface-3: #1a2231;
+            --border: rgba(255,255,255,.075);
+            --border-strong: rgba(255,255,255,.12);
+            --text: #f4f7fb;
+            --muted: #8e9aab;
+            --primary: #6d5dfc;
+            --primary-2: #8b7cff;
+            --cyan: #22d3ee;
+            --green: #25d695;
+            --yellow: #f6c453;
+            --red: #ff5f6d;
+            --shadow: 0 23px 69px rgba(0,0,0,.28);
+            --radius: 21px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(109,93,252,.14), transparent 32%),
+                radial-gradient(circle at 90% 5%, rgba(34,211,238,.08), transparent 29%),
+                var(--bg);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        ::selection {
+            background: rgba(109,93,252,.35);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar { width: 9px; height: 9px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb {
+            background: #30394b;
+            border-radius: 114px;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 299px;
+            min-width: 299px;
+            min-height: 100vh;
+            position: fixed;
+            inset: 0 auto 0 0;
+            z-index: 1000;
+            padding: 25px 18px;
+            background: rgba(13,17,26,.94);
+            border-right: 1px solid var(--border);
+            backdrop-filter: blur(25px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 9px 12px 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 22px;
+            background: linear-gradient(135deg, var(--primary), #4b8cff);
+            box-shadow: 0 14px 35px rgba(109,93,252,.28);
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.46px;
+        }
+
+        .brand-sub {
+            display: block;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        .nav-label {
+            padding: 0 12px 10px;
+            color: #626d7e;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .side-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .side-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 15px;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            color: #a8b2c1;
+            font-size: 15px;
+            font-weight: 600;
+            transition: .2s ease;
+        }
+
+        .side-link i {
+            width: 22px;
+            text-align: center;
+            color: #697588;
+            font-size: 16px;
+        }
+
+        .side-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,.045);
+            border-color: var(--border);
+        }
+
+        .side-link.active {
+            color: #fff;
+            background: linear-gradient(90deg, rgba(109,93,252,.18), rgba(109,93,252,.06));
+            border-color: rgba(109,93,252,.25);
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+
+        .side-link.active i { color: var(--primary-2); }
+
+        .sidebar-bottom {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 23px;
+        }
+
+        .system-card {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            background: rgba(255,255,255,.025);
+        }
+
+        .system-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 6px rgba(37,214,149,.09);
+        }
+
+        /* MAIN */
+        .main {
+            width: calc(100% - 299px);
+            margin-left: 299px;
+            min-width: 0;
+        }
+
+        .topbar {
+            height: 87px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 39px;
+            background: rgba(8,11,18,.78);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(21px);
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.4px;
+        }
+
+        .page-path {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-btn {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            color: #a9b3c2;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: rgba(255,255,255,.025);
+            transition: .2s ease;
+        }
+
+        .top-btn:hover {
+            color: #fff;
+            border-color: var(--border-strong);
+            background: rgba(255,255,255,.06);
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 6px;
+            padding-left: 15px;
+            border-left: 1px solid var(--border);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #27324a, #171e2d);
+            border: 1px solid var(--border-strong);
+            color: #dbe3ef;
+            font-size: 15px;
+        }
+
+        .content {
+            max-width: 1783px;
+            margin: 0 auto;
+            padding: 37px 39px 63px;
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 32px 35px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            background:
+                radial-gradient(circle at 85% 10%, rgba(34,211,238,.13), transparent 28%),
+                radial-gradient(circle at 70% 120%, rgba(109,93,252,.15), transparent 40%),
+                linear-gradient(135deg, #121928, #0e141f);
+            box-shadow: var(--shadow);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 299px;
+            height: 299px;
+            right: -104px;
+            top: -138px;
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 50%;
+            box-shadow: 0 0 0 40px rgba(255,255,255,.015), 0 0 0 81px rgba(255,255,255,.01);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: #b9b1ff;
+            background: rgba(109,93,252,.11);
+            border: 1px solid rgba(109,93,252,.2);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            margin: 15px 0 7px;
+            font-size: clamp(26px, 3.45vw, 36px);
+            font-weight: 800;
+            letter-spacing: -1.15px;
+        }
+
+        .hero p {
+            max-width: 782px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.75;
+        }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+            padding: 24px;
+            min-height: 167px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: linear-gradient(145deg, rgba(21,28,41,.98), rgba(15,21,31,.98));
+            transition: .25s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-strong);
+            box-shadow: 0 21px 46px rgba(0,0,0,.2);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            font-size: 17px;
+        }
+
+        .icon-purple { color: #a59bff; background: rgba(109,93,252,.13); }
+        .icon-cyan { color: #70e9fa; background: rgba(34,211,238,.11); }
+        .icon-green { color: #6ee7b7; background: rgba(37,214,149,.11); }
+        .icon-yellow { color: #f9d77d; background: rgba(246,196,83,.11); }
+
+        .stat-label {
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .stat-number {
+            margin-top: 3px;
+            font-size: 29px;
+            font-weight: 800;
+            letter-spacing: -.92px;
+        }
+
+        .stat-trend {
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* PANELS */
+        .panel {
+            overflow: hidden;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            box-shadow: 0 12px 40px rgba(0,0,0,.12);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 17px;
+            padding: 23px 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,.018);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .section-title i { color: var(--primary-2); }
+
+        .section-subtitle {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .count-badge {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: #b9c3d2;
+            background: rgba(255,255,255,.035);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 23px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 403px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #657185;
+            font-size: 14px;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 43px;
+            padding: 0 15px 0 39px;
+            outline: none;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255,255,255,.025);
+            font-size: 13px;
+        }
+
+        .search-box input:focus {
+            border-color: rgba(109,93,252,.55);
+            box-shadow: 0 0 0 3px rgba(109,93,252,.08);
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        .table {
+            margin: 0;
+            color: var(--text);
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text);
+            --bs-table-border-color: var(--border);
+        }
+
+        .table thead th {
+            padding: 14px 23px;
+            color: #687487;
+            background: rgba(255,255,255,.018);
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 16px 23px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .table tbody tr:last-child td { border-bottom: 0; }
+
+        .table tbody tr { transition: .15s ease; }
+
+        .table tbody tr:hover {
+            background: rgba(255,255,255,.022);
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            min-width: 219px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 40px;
+            border-radius: 12px;
+            color: #c9c3ff;
+            background: rgba(109,93,252,.12);
+            border: 1px solid rgba(109,93,252,.15);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .user-name {
+            color: #edf1f7;
+            font-weight: 700;
+        }
+
+        .user-email {
+            margin-top: 2px;
+            color: #697588;
+            font-size: 12px;
+        }
+
+        .email-pill {
+            display: inline-flex;
+            max-width: 253px;
+            padding: 7px 10px;
+            color: #aeb9ca;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: rgba(255,255,255,.025);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 10px;
+        }
+
+        .role {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 9px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .role-admin {
+            color: #ff9aa3;
+            background: rgba(255,95,109,.09);
+            border: 1px solid rgba(255,95,109,.15);
+        }
+
+        .role-user {
+            color: #aeb9c9;
+            background: rgba(255,255,255,.045);
+            border: 1px solid var(--border);
+        }
+
+        .action-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 7px;
+        }
+
+        .action-btn {
+            width: 37px;
+            height: 37px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 12px;
+            transition: .2s ease;
+        }
+
+        .action-chat { color: #f5cd70; background: rgba(246,196,83,.07); }
+        .action-role { color: #70dff1; background: rgba(34,211,238,.07); }
+        .action-delete { color: #ff818b; background: rgba(255,95,109,.07); }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.2);
+            border-color: var(--border-strong);
+        }
+
+        .empty-state {
+            padding: 58px 23px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty-icon {
+            width: 67px;
+            height: 67px;
+            margin: 0 auto 16px;
+            display: grid;
+            place-items: center;
+            border-radius: 20px;
+            color: #667286;
+            background: rgba(255,255,255,.035);
+            font-size: 23px;
+        }
+
+        .message-preview {
+            display: block;
+            max-width: 357px;
+            overflow: hidden;
+            color: #c1c9d6;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ai-preview {
+            display: block;
+            max-width: 483px;
+            overflow: hidden;
+            color: #7f8b9e;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+
+        .date-cell {
+            color: #7c8798;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* MODAL */
+        .modal-content {
+            overflow: hidden;
+            color: var(--text);
+            border: 1px solid var(--border-strong);
+            border-radius: 23px;
+            background: #101620;
+            box-shadow: 0 35px 115px rgba(0,0,0,.55);
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 20px 23px;
+            border-color: var(--border);
+        }
+
+        .modal-header {
+            background: rgba(255,255,255,.02);
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .modal-body { padding: 23px; }
+
+        .chat-box {
+            max-height: 564px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .msg-user,
+        .msg-ai {
+            padding: 16px 17px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .msg-user {
+            background: linear-gradient(135deg, rgba(109,93,252,.11), rgba(109,93,252,.035));
+        }
+
+        .msg-ai {
+            margin-bottom: 21px;
+            background: linear-gradient(135deg, rgba(37,214,149,.09), rgba(37,214,149,.025));
+        }
+
+        .msg-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            color: #aaa4ff;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .msg-ai .msg-label { color: #69dfae; }
+
+        .msg-time {
+            color: #677386;
+            font-weight: 500;
+        }
+
+        .msg-text {
+            color: #c7cfdb;
+            font-size: 13px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .btn-close-white { opacity: .7; }
+
+        /* FOOTER */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 17px;
+            padding: 23px 0 0;
+            color: #5f6a7b;
+            font-size: 12px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1180px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 87px;
+                min-width: 87px;
+                padding: 21px 12px;
+            }
+
+            .brand {
+                justify-content: center;
+                padding: 6px 0 23px;
+            }
+
+            .brand-copy,
+            .nav-label,
+            .side-link span,
+            .system-card .system-copy { display: none; }
+
+            .side-link {
+                justify-content: center;
+                padding: 15px;
+            }
+
+            .side-link i {
+                width: auto;
+                font-size: 18px;
+            }
+
+            .sidebar-bottom {
+                left: 12px;
+                right: 12px;
+            }
+
+            .system-card {
+                display: grid;
+                place-items: center;
+                padding: 15px 6px;
+            }
+
+            .main {
+                width: calc(100% - 87px);
+                margin-left: 87px;
+            }
+
+            .content { padding: 29px 23px 52px; }
+            .topbar { padding: 0 23px; }
+        }
+
+        @media (max-width: 650px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .topbar { height: 78px; }
+            .admin-profile { display: none; }
+            .hero { padding: 25px; }
+            .toolbar { flex-wrap: wrap; }
+            .search-box { max-width: none; min-width: 100%; }
+            .panel-header { align-items: flex-start; }
+            .footer { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <a href="/ddaam" class="brand">
+          <div class="brand-mark" style="overflow: hidden; padding: 0; background: transparent;">
+    <img src="/ada-logo.jpeg" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;">
+</div>
+            <div class="brand-copy">
+                <div class="brand-name">ADA AI</div>
+                <span class="brand-sub">Admin Control</span>
+            </div>
+        </a>
+
+        <div class="nav-label">İdarəetmə</div>
+        <nav class="side-nav">
+            <a href="/ddaam" class="side-link active">
+                <i class="fa-solid fa-grid-2"></i><span>Dashboard</span>
+            </a>
+            <a href="#users" class="side-link">
+                <i class="fa-solid fa-users"></i><span>İstifadəçilər</span>
+            </a>
+            <a href="#messages" class="side-link">
+                <i class="fa-solid fa-comments"></i><span>Yazışmalar</span>
+            </a>
+            <a href="/chat" class="side-link">
+                <i class="fa-solid fa-message"></i><span>AI Çat</span>
+            </a>
+        </nav>
+
+        <div class="nav-label mt-4">Sistem</div>
+        <nav class="side-nav">
+            <a href="/logout" class="side-link">
+                <i class="fa-solid fa-right-from-bracket"></i><span>Çıxış</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="system-card">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="system-dot"></span>
+                    <div class="system-copy">
+                        <div style="font-size:10px;font-weight:800;color:#d7dee8;">Sistem aktivdir</div>
+                        <div style="font-size:9px;color:#667386;margin-top:2px;">Bütün xidmətlər normaldır</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div>
+                <h1 class="page-title">Admin Dashboard</h1>
+                <div class="page-path">ADA AI <span style="margin:0 5px;">/</span> İdarəetmə paneli</div>
+            </div>
+
+            <div class="top-actions">
+                <a href="/chat" class="top-btn" title="AI Çata qayıt">
+                    <i class="fa-solid fa-comments"></i>
+                </a>
+                <button class="top-btn" type="button" onclick="location.reload()" title="Yenilə">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <a href="/logout" class="top-btn" title="Çıxış">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+                <div class="admin-profile">
+                    <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
+                    <div>
+                        <div style="font-size:10px;color:#e7ecf3;font-weight:800;">Administrator</div>
+                        <div style="font-size:9px;color:#697588;">Super Admin</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <!-- HERO -->
+            <section class="hero">
+                <span class="eyebrow">
+                    <i class="fa-solid fa-sparkles"></i>
+                    Control Center
+                </span>
+                <h1>ADA AI idarəetmə panelinə xoş gəlmisiniz</h1>
+                <p>
+                    İstifadəçiləri, rolları və AI yazışmalarını bir mərkəzdən
+                    idarə edin. Panel real məlumatlarla işləyir və əsas
+                    administrator əməliyyatlarını sürətli şəkildə təqdim edir.
+                </p>
+            </section>
+
+            <!-- STATS -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-users"></i></div>
+                        <span class="stat-trend"><i class="fa-solid fa-circle-check"></i> Aktiv</span>
+                    </div>
+                    <div class="stat-label">Ümumi istifadəçilər</div>
+                    <div class="stat-number"><%= stats.totalUsers %></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-cyan"><i class="fa-solid fa-message"></i></div>
+                        <span class="stat-trend"><i class="fa-solid fa-chart-line"></i> Real</span>
+                    </div>
+                    <div class="stat-label">Ümumi söhbətlər</div>
+                    <div class="stat-number"><%= stats.totalChats %></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-shield-halved"></i></div>
+                        <span class="stat-trend">Qorunur</span>
+                    </div>
+                    <div class="stat-label">Admin hesabları</div>
+                    <div class="stat-number"><%= users.filter(u => u.is_admin).length %></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <div class="stat-icon icon-yellow"><i class="fa-solid fa-database"></i></div>
+                        <span class="stat-trend">Online</span>
+                    </div>
+                    <div class="stat-label">Mesaj bazası</div>
+                    <div class="stat-number"><%= messages.length %></div>
+                </div>
+            </section>
+
+            <!-- USERS -->
+            <section class="panel" id="users">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fa-solid fa-users-gear"></i>
+                            İstifadəçilərin idarə olunması
+                        </h2>
+                        <p class="section-subtitle">Hesablar, rollar və istifadəçi tarixçəsinə nəzarət</p>
+                    </div>
+                    <span class="count-badge"><%= users.length %> istifadəçi</span>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="search" id="userSearch" placeholder="Ad, email və ya ID üzrə axtar...">
+                    </div>
+                    <button type="button" class="top-btn" style="width:37px;height:37px;" onclick="clearUserSearch()" title="Təmizlə">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="table align-middle" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>İstifadəçi</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th class="text-end">Əməliyyatlar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <% users.forEach(user => { %>
+                            <tr data-search="<%= user.id %> <%= user.fullname %> <%= user.email %>">
+                                <td>
+                                    <span style="color:#667286;font-family:ui-monospace,monospace;">#<%= user.id %></span>
+                                </td>
+
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar">
+                                            <%= (user.fullname || "U").substring(0,1).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <div class="user-name"><%= user.fullname %></div>
+                                            <div class="user-email">ADA AI hesabı</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="email-pill"><%= user.email %></span>
+                                </td>
+
+                                <td>
+                                    <% if (user.is_admin) { %>
+                                        <span class="role role-admin">
+                                            <i class="fa-solid fa-shield-halved"></i> Admin
+                                        </span>
+                                    <% } else { %>
+                                        <span class="role role-user">
+                                            <i class="fa-solid fa-user"></i> İstifadəçi
+                                        </span>
+                                    <% } %>
+                                </td>
+
+                                <td>
+                                    <div class="action-group">
+                                        <button
+                                            class="action-btn action-chat"
+                                            title="İstifadəçinin mesajları"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#userModal-<%= user.id %>">
+                                            <i class="fa-solid fa-comments"></i>
+                                        </button>
+
+                                        <form action="/ddaam/users/<%= user.id %>/toggle-admin" method="POST" class="d-inline">
+                                            <button class="action-btn action-role" type="submit" title="Rolu dəyiş">
+                                                <i class="fa-solid fa-user-shield"></i>
+                                            </button>
+                                        </form>
+
+                                        <form
+                                            action="/ddaam/users/<%= user.id %>/delete"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Bu istifadəçini silməyə əminsiniz? Bu əməliyyat geri qaytarılmaya bilər.');">
+                                            <button class="action-btn action-delete" type="submit" title="İstifadəçini sil">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- USER CHAT MODAL -->
+                            <div class="modal fade" id="userModal-<%= user.id %>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <div>
+                                                <div class="modal-title">
+                                                    <i class="fa-solid fa-circle-user me-2" style="color:var(--primary-2);"></i>
+                                                    <%= user.fullname %>
+                                                </div>
+                                                <div style="font-size:9px;color:#687487;margin-top:4px;">
+                                                    <%= user.email %> · Söhbət tarixçəsi
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Bağla"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <% const userMsgs = messages.filter(m => m.user_email === user.email); %>
+
+                                            <% if (userMsgs.length === 0) { %>
+                                                <div class="empty-state">
+                                                    <div class="empty-icon"><i class="fa-regular fa-comment-dots"></i></div>
+                                                    <div style="font-size:12px;font-weight:700;color:#9ba6b7;">Mesaj tarixçəsi boşdur</div>
+                                                    <div style="font-size:10px;margin-top:5px;">Bu istifadəçinin hələ heç bir mesajı yoxdur.</div>
+                                                </div>
+                                            <% } else { %>
+                                                <div class="chat-box">
+                                                    <% userMsgs.forEach(m => { %>
+                                                        <div class="msg-user">
+                                                            <div class="msg-label">
+                                                                <span><i class="fa-solid fa-user me-1"></i> İstifadəçi</span>
+                                                                <span class="msg-time"><%= new Date(m.created_at).toLocaleString('az-AZ') %></span>
+                                                            </div>
+                                                            <div class="msg-text"><%= m.user_message %></div>
+                                                        </div>
+
+                                                        <div class="msg-ai">
+                                                            <div class="msg-label">
+                                                                <span><i class="fa-solid fa-robot me-1"></i> ADA AI</span>
+                                                            </div>
+                                                            <div class="msg-text"><%= m.ai_response %></div>
+                                                        </div>
+                                                    <% }) %>
+                                                </div>
+                                            <% } %>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">
+                                                Bağla
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ALL MESSAGES -->
+            <section class="panel" id="messages">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="section-title">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            Bütün yazışmalar
+                        </h2>
+                        <p class="section-subtitle">Sistemdə qeydə alınmış bütün istifadəçi və AI mesajları</p>
+                    </div>
+                    <span class="count-badge"><%= messages.length %> yazışma</span>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="search" id="messageSearch" placeholder="Email və ya mesaj mətninə görə axtar...">
+                    </div>
+                    <button type="button" class="top-btn" style="width:37px;height:37px;" onclick="clearMessageSearch()" title="Təmizlə">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="table align-middle" id="messagesTable">
+                        <thead>
+                            <tr>
+                                <th>Tarix / Vaxt</th>
+                                <th>İstifadəçi</th>
+                                <th>İstifadəçinin mesajı</th>
+                                <th>ADA AI cavabı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <% messages.forEach(msg => { %>
+                            <tr data-search="<%= msg.user_email %> <%= msg.user_message %> <%= msg.ai_response %>">
+                                <td>
+                                    <span class="date-cell">
+                                        <i class="fa-regular fa-calendar me-1"></i>
+                                        <%= new Date(msg.created_at).toLocaleString('az-AZ') %>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="email-pill"><%= msg.user_email %></span>
+                                </td>
+
+                                <td>
+                                    <span class="message-preview" title="<%= msg.user_message %>">
+                                        <%= msg.user_message %>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="ai-preview" title="<%= msg.ai_response %>">
+                                        <%= msg.ai_response %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }) %>
+                        </tbody>
+                    </table>
+
+                    <% if (messages.length === 0) { %>
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-regular fa-comments"></i></div>
+                            <div style="font-size:12px;font-weight:700;color:#9ba6b7;">Hələ heç bir yazışma yoxdur</div>
+                            <div style="font-size:10px;margin-top:5px;">İstifadəçilərin AI ilə söhbətləri burada görünəcək.</div>
+                        </div>
+                    <% } %>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <span>© <%= new Date().getFullYear() %> ADA AI · Admin Control Center</span>
+                <span><i class="fa-solid fa-lock me-1"></i> Təhlükəsiz idarəetmə paneli</span>
+            </footer>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function setupTableSearch(inputId, tableId) {
+        const input = document.getElementById(inputId);
+        const table = document.getElementById(tableId);
+
+        if (!input || !table) return;
+
+        input.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+
+            table.querySelectorAll("tbody tr").forEach(row => {
+                const content = (row.dataset.search || row.innerText || "").toLowerCase();
+                row.style.display = content.includes(query) ? "" : "none";
+            });
+        });
+    }
+
+    function clearUserSearch() {
+        const input = document.getElementById("userSearch");
+        if (input) {
+            input.value = "";
+            input.dispatchEvent(new Event("input"));
+            input.focus();
+        }
+    }
+
+    function clearMessageSearch() {
+        const input = document.getElementById("messageSearch");
+        if (input) {
+            input.value = "";
+            input.dispatchEvent(new Event("input"));
+            input.focus();
+        }
+    }
+
+    setupTableSearch("userSearch", "usersTable");
+    setupTableSearch("messageSearch", "messagesTable");
+
+    // Sidebar keçidlərinin yumşaq scroll davranışı
+    document.querySelectorAll('.side-link[href^="#"]').forEach(link => {
+        link.addEventListener("click", function (e) {
+            const target = document.querySelector(this.getAttribute("href"));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
+    });
+
+    // Modal açıldıqda söhbətin sonuna keç
+    document.querySelectorAll(".modal").forEach(modal => {
+        modal.addEventListener("shown.bs.modal", function () {
+            const chat = this.querySelector(".chat-box");
+            if (chat) chat.scrollTop = chat.scrollHeight;
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,2441 @@
+
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title data-lang="limit_page_title">
+        Günlük İstifadə Limiti - ADA Student AI
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="/ada-logo.jpeg">
+
+      <!-- Markdown Parser & DOMPurify (XSS Təhlükəsizliyi üçün) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="/js/language.js"></script>
+
+
+    <style>
+
+        /* =====================================================
+           ROOT
+        ===================================================== */
+
+        :root {
+            --bg: #020617;
+            --sidebar: #0f172a;
+            --sidebar-hover: #1e293b;
+            --card: #0f172a;
+            --border: #1e293b;
+
+            --text: #f8fafc;
+            --muted: #94a3b8;
+
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+
+            --blue: #60a5fa;
+            --purple: #818cf8;
+            --orange: #f59e0b;
+
+            --shadow: rgba(0,0,0,.25);
+        }
+
+
+        /* =====================================================
+           RESET
+        ===================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family:
+                'Segoe UI',
+                Tahoma,
+                Geneva,
+                Verdana,
+                sans-serif;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+
+            min-height: 100vh;
+
+            overflow-x: hidden;
+
+            transition:
+                background-color .3s ease,
+                color .3s ease;
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .sidebar {
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 280px;
+            height: 100vh;
+
+            background: var(--sidebar);
+
+            color: var(--text);
+
+            display: flex;
+            flex-direction: column;
+
+            z-index: 1000;
+
+            border-right: 1px solid var(--border);
+
+            transition:
+                transform .3s ease,
+                background-color .3s ease,
+                border-color .3s ease;
+        }
+
+
+        /* =====================================================
+           SIDEBAR HEADER
+        ===================================================== */
+
+        .sidebar-header {
+            height: 72px;
+
+            padding: 0 17px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            border-bottom: 1px solid var(--border);
+
+            flex-shrink: 0;
+        }
+
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+
+            min-width: 0;
+        }
+
+
+        .sidebar-logo {
+            width: 36px;
+            height: 36px;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+
+            flex-shrink: 0;
+        }
+
+
+        .sidebar-title {
+            font-size: 16px;
+
+            font-weight: 700;
+
+            letter-spacing: -.4px;
+
+            white-space: nowrap;
+        }
+
+
+        .close-sidebar-btn {
+            width: 34px;
+            height: 34px;
+
+            border: none;
+
+            background: transparent;
+
+            color: #94a3b8;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 18px;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .close-sidebar-btn:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+
+
+        /* =====================================================
+           CHAT BUTTON
+        ===================================================== */
+
+        .sidebar-action-area {
+            padding: 16px;
+        }
+
+
+        .new-chat-btn {
+            width: 100%;
+
+            min-height: 44px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: var(--primary);
+
+            color: #fff;
+
+            text-decoration: none;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 9px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                background .2s ease,
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+
+        .new-chat-btn:hover {
+            background: var(--primary-hover);
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 6px 18px rgba(37,99,235,.22);
+        }
+
+
+        /* =====================================================
+           SIDEBAR CENTER
+        ===================================================== */
+
+        .sidebar-content {
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 0 12px 15px;
+        }
+
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #334155;
+
+            border-radius: 20px;
+        }
+
+
+        /* =====================================================
+           QUICK MENU
+        ===================================================== */
+
+        .sidebar-section-title {
+            color: #64748b;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .8px;
+
+            padding: 10px 10px 7px;
+        }
+
+
+        .sidebar-link {
+            width: 100%;
+
+            padding: 10px 11px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            color: #cbd5e1;
+
+            background: transparent;
+
+            border: none;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            font-size: 13.5px;
+
+            margin-bottom: 3px;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .sidebar-link i {
+            width: 19px;
+
+            text-align: center;
+
+            font-size: 14px;
+        }
+
+
+        .sidebar-link:hover {
+            background: var(--sidebar-hover);
+
+            color: #fff;
+        }
+
+
+        .sidebar-link.active {
+            background: rgba(37,99,235,.14);
+
+            color: #60a5fa;
+        }
+
+
+        /* =====================================================
+           SIDEBAR FOOTER
+        ===================================================== */
+
+        .sidebar-footer {
+            padding: 14px 15px 15px;
+
+            border-top: 1px solid var(--border);
+
+            background: var(--sidebar);
+
+            flex-shrink: 0;
+
+            transition:
+                background .3s ease,
+                border-color .3s ease;
+        }
+
+
+        /* =====================================================
+           SETTINGS
+        ===================================================== */
+
+        .settings-dropdown-wrapper {
+            position: relative;
+        }
+
+
+        .settings-toggle-btn {
+            width: 100%;
+
+            min-height: 42px;
+
+            border: none;
+
+            background: transparent;
+
+            color: #cbd5e1;
+
+            border-radius: 8px;
+
+            padding: 10px 11px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 13.5px;
+
+            cursor: pointer;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .settings-toggle-btn:hover,
+        .settings-toggle-btn.active {
+            background: var(--sidebar-hover);
+
+            color: #fff;
+        }
+
+
+        .settings-toggle-btn .arrow {
+            margin-left: auto;
+
+            font-size: 11px;
+
+            transition: transform .2s ease;
+        }
+
+
+        .settings-toggle-btn.active .arrow {
+            transform: rotate(180deg);
+        }
+
+
+        /* =====================================================
+           SETTINGS MENU
+        ===================================================== */
+
+        .settings-menu {
+            position: absolute;
+
+            left: 0;
+
+            bottom: calc(100% + 8px);
+
+            width: 100%;
+
+            padding: 5px;
+
+            background: #1e293b;
+
+            border: 1px solid #334155;
+
+            border-radius: 10px;
+
+            box-shadow:
+                0 15px 35px rgba(0,0,0,.3);
+
+            display: none;
+
+            z-index: 50;
+        }
+
+
+        .settings-menu.active {
+            display: block;
+        }
+
+
+        .settings-item {
+            width: 100%;
+
+            padding: 11px 12px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            border-radius: 7px;
+
+            color: #f8fafc;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            background: transparent;
+
+            border: none;
+
+            cursor: pointer;
+
+            text-align: left;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .settings-item i {
+            width: 18px;
+
+            text-align: center;
+        }
+
+
+        .settings-item:hover {
+            background: #334155;
+        }
+
+
+        /* =====================================================
+           USER PROFILE
+        ===================================================== */
+
+        .user-profile {
+            margin-top: 9px;
+
+            min-height: 55px;
+
+            padding: 8px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            border-radius: 9px;
+
+            background: rgba(0,0,0,.18);
+
+            min-width: 0;
+        }
+
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            overflow: hidden;
+
+            background: #334155;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #cbd5e1;
+
+            flex-shrink: 0;
+        }
+
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+        }
+
+
+        .user-info {
+            flex: 1;
+
+            min-width: 0;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        .user-name {
+            color: #f8fafc;
+
+            font-size: 13px;
+
+            font-weight: 650;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .user-email {
+            color: #94a3b8;
+
+            font-size: 10.5px;
+
+            margin-top: 2px;
+
+            overflow: hidden;
+
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .logout-btn {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 7px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            color: #94a3b8;
+
+            text-decoration: none;
+
+            flex-shrink: 0;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .logout-btn:hover {
+            background: rgba(239,68,68,.12);
+
+            color: #ef4444;
+        }
+
+
+        /* =====================================================
+           LOGIN
+        ===================================================== */
+
+        .login-btn {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            width: 100%;
+
+            padding: 11px;
+
+            border-radius: 8px;
+
+            background: rgba(34,197,94,.10);
+
+            border: 1px solid rgba(34,197,94,.20);
+
+            color: #4ade80;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+
+        .login-btn:hover {
+            background: rgba(34,197,94,.17);
+        }
+
+
+        /* =====================================================
+           OVERLAY
+        ===================================================== */
+
+        .sidebar-overlay {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,.55);
+
+            backdrop-filter: blur(2px);
+
+            z-index: 999;
+
+            display: none;
+        }
+
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+
+        /* =====================================================
+           MAIN CONTENT
+        ===================================================== */
+
+        .main-content {
+            margin-left: 280px;
+
+            width: calc(100% - 280px);
+
+            min-height: 100vh;
+
+            padding: 40px;
+
+            transition:
+                background .3s ease,
+                color .3s ease;
+        }
+
+
+        /* =====================================================
+           LIMIT HEADER
+        ===================================================== */
+
+        .limit-header {
+            text-align: center;
+
+            max-width: 700px;
+
+            margin: 0 auto 40px;
+        }
+
+
+        .badge-limit {
+            background:
+                linear-gradient(
+                    135deg,
+                    #6366f1,
+                    #4f46e5
+                );
+
+            color: #fff;
+
+            padding: 6px 14px;
+
+            border-radius: 20px;
+
+            font-size: .8rem;
+
+            font-weight: bold;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .limit-header h1 {
+            font-size: 2.2rem;
+
+            margin-bottom: 15px;
+
+            line-height: 1.2;
+        }
+
+
+        .limit-header p {
+            color: var(--muted);
+
+            line-height: 1.6;
+
+            font-size: 1rem;
+        }
+
+
+        /* =====================================================
+           LIMIT CARD
+        ===================================================== */
+
+        .limit-main-card {
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            max-width: 600px;
+
+            width: 100%;
+
+            margin: 0 auto 30px;
+
+            box-shadow:
+                0 10px 30px rgba(0,0,0,.1);
+
+            transition:
+                background .3s ease,
+                border-color .3s ease;
+        }
+
+
+        .limit-card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        .limit-card-title {
+            font-size: 1.2rem;
+
+            font-weight: 600;
+        }
+
+
+        .limit-status-badge {
+            background:
+                rgba(34,197,94,.15);
+
+            color: #22c55e;
+
+            padding: 4px 12px;
+
+            border-radius: 20px;
+
+            font-size: .8rem;
+
+            font-weight: 600;
+        }
+
+
+        /* =====================================================
+           PROGRESS BAR
+        ===================================================== */
+
+        .progress-bar-bg {
+            width: 100%;
+
+            height: 12px;
+
+            background:
+                rgba(255,255,255,.08);
+
+            border-radius: 6px;
+
+            overflow: hidden;
+
+            margin-bottom: 15px;
+        }
+
+
+        .progress-bar-fill {
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #6366f1,
+                    #22d3ee
+                );
+
+            border-radius: 6px;
+
+            transition:
+                width .4s ease;
+        }
+
+
+        .limit-stats {
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: .9rem;
+
+            color: var(--muted);
+
+            margin-bottom: 25px;
+        }
+
+
+        .limit-stat-value {
+            font-weight: bold;
+
+            color: var(--text);
+        }
+
+
+        /* =====================================================
+           UPGRADE BUTTON
+        ===================================================== */
+
+        .btn-upgrade-redirect {
+            background:
+                linear-gradient(
+                    135deg,
+                    #f59e0b,
+                    #d97706
+                );
+
+            color: white;
+
+            border: none;
+
+            width: 100%;
+
+            padding: 14px;
+
+            border-radius: 12px;
+
+            font-weight: bold;
+
+            font-size: 1rem;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            text-decoration: none;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+
+        .btn-upgrade-redirect:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 8px 20px rgba(245,158,11,.18);
+        }
+
+
+        /* =====================================================
+           INFO BOX
+        ===================================================== */
+
+        .info-box {
+            max-width: 600px;
+
+            margin: 0 auto;
+
+            background:
+                rgba(99,102,241,.10);
+
+            border:
+                1px solid rgba(99,102,241,.20);
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            display: flex;
+
+            gap: 15px;
+
+            align-items: flex-start;
+        }
+
+
+        .info-box i {
+            color: #818cf8;
+
+            font-size: 1.2rem;
+
+            margin-top: 2px;
+        }
+
+
+        .info-box h4 {
+            margin: 0 0 5px;
+
+            font-size: 1rem;
+        }
+
+
+        .info-box p {
+            margin: 0;
+
+            color: var(--muted);
+
+            font-size: .85rem;
+
+            line-height: 1.5;
+        }
+
+
+        /* =====================================================
+           LIGHT MODE
+        ===================================================== */
+
+        body.light-mode {
+            --bg: #f8fafc;
+
+            --sidebar: #ffffff;
+
+            --sidebar-hover: #f1f5f9;
+
+            --card: #ffffff;
+
+            --border: #e2e8f0;
+
+            --text: #0f172a;
+
+            --muted: #475569;
+
+            --shadow: rgba(15,23,42,.08);
+        }
+
+
+        body.light-mode .sidebar-link {
+            color: #475569;
+        }
+
+
+        body.light-mode .sidebar-link:hover {
+            color: #0f172a;
+        }
+
+
+        body.light-mode .sidebar-link.active {
+            background: #eff6ff;
+
+            color: #2563eb;
+        }
+
+
+        body.light-mode .settings-menu {
+            background: #ffffff;
+
+            border-color: #e2e8f0;
+
+            box-shadow:
+                0 15px 35px rgba(15,23,42,.12);
+        }
+
+
+        body.light-mode .settings-item {
+            color: #334155;
+        }
+
+
+        body.light-mode .settings-item:hover {
+            background: #f1f5f9;
+        }
+
+
+        body.light-mode .user-profile {
+            background: #f1f5f9;
+        }
+
+
+        body.light-mode .user-name {
+            color: #0f172a;
+        }
+
+
+        body.light-mode .user-email {
+            color: #64748b;
+        }
+
+
+        body.light-mode .limit-header h1 {
+            color: #0f172a;
+        }
+
+
+        body.light-mode .limit-card-title {
+            color: #0f172a;
+        }
+
+
+        body.light-mode .limit-stat-value {
+            color: #0f172a;
+        }
+
+
+        body.light-mode .limit-main-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+
+        body.light-mode .progress-bar-bg {
+            background: #e2e8f0;
+        }
+
+
+        body.light-mode .info-box {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+
+
+        body.light-mode .info-box h4 {
+            color: #0f172a;
+        }
+
+
+        /* =====================================================
+           MOBILE HEADER
+        ===================================================== */
+
+        .mobile-header {
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+            left: 0;
+            right: 0;
+
+            height: 60px;
+
+            z-index: 1001;
+
+            padding: 0 15px;
+
+            background: var(--sidebar);
+
+            border-bottom: 1px solid var(--border);
+
+            align-items: center;
+
+            transition:
+                background .3s ease,
+                border-color .3s ease;
+        }
+
+
+        .mobile-menu-btn {
+            width: 38px;
+            height: 38px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: transparent;
+
+            color: var(--text);
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+
+        .mobile-menu-btn:hover {
+            background: var(--sidebar-hover);
+        }
+
+
+        .mobile-brand {
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            margin-left: 8px;
+
+            font-weight: 700;
+
+            font-size: 15px;
+
+            color: var(--text);
+        }
+
+
+        .mobile-brand img {
+            width: 31px;
+            height: 31px;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+
+            .sidebar.open,
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+
+            .close-sidebar-btn {
+                display: flex;
+            }
+
+
+            .mobile-header {
+                display: flex;
+            }
+
+
+            .main-content {
+                margin-left: 0;
+
+                width: 100%;
+
+                padding:
+                    82px 16px 30px;
+            }
+
+
+            .limit-header {
+                margin-bottom: 25px;
+            }
+
+
+            .limit-header h1 {
+                font-size: 1.7rem;
+            }
+
+
+            .limit-header p {
+                font-size: .92rem;
+            }
+
+
+            .limit-main-card {
+                padding: 20px;
+
+                border-radius: 16px;
+            }
+
+
+            .limit-card-header {
+                gap: 10px;
+            }
+
+
+            .limit-card-title {
+                font-size: 1rem;
+            }
+
+
+            .limit-stats {
+                gap: 10px;
+
+                flex-wrap: wrap;
+
+                font-size: .82rem;
+            }
+
+
+            .info-box {
+                padding: 17px;
+
+                border-radius: 13px;
+            }
+
+        }
+
+
+        /* =====================================================
+           SMALL MOBILE
+        ===================================================== */
+
+        @media (max-width: 420px) {
+
+            .main-content {
+                padding-left: 12px;
+
+                padding-right: 12px;
+            }
+
+
+            .limit-header h1 {
+                font-size: 1.45rem;
+            }
+
+
+            .limit-main-card {
+                padding: 16px;
+            }
+
+
+            .limit-card-header {
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .limit-status-badge {
+                font-size: .72rem;
+            }
+
+
+            .info-box {
+                gap: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     MOBILE HEADER
+========================================================= -->
+
+<header class="mobile-header">
+
+    <button
+        class="mobile-menu-btn"
+        id="menuToggleBtn"
+        aria-label="Menyunu aç">
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+
+    <div class="mobile-brand">
+
+        <img
+            src="/ada-logo.jpeg"
+            alt="ADA Logo">
+
+        <span>
+            ADA Student AI
+        </span>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     SIDEBAR OVERLAY
+========================================================= -->
+
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay">
+</div>
+
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+
+<aside
+    class="sidebar"
+    id="sidebar">
+
+
+    <!-- SIDEBAR HEADER -->
+
+    <div class="sidebar-header">
+
+        <div class="logo-area">
+
+            <img
+                src="/ada-logo.jpeg"
+                alt="ADA Logo"
+                class="sidebar-logo">
+
+            <span class="sidebar-title">
+                ADA Student AI
+            </span>
+
+        </div>
+
+
+        <button
+            class="close-sidebar-btn"
+            id="closeSidebarBtn"
+            aria-label="Bağla">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+    </div>
+
+
+
+    <!-- CHAT BUTTON -->
+
+    <div class="sidebar-action-area">
+
+        <a
+            href="/"
+            class="new-chat-btn">
+
+            <i class="fa-regular fa-comments"></i>
+
+            <span data-lang="sidebar_chat_btn">
+                Çata Keçid Et
+            </span>
+
+        </a>
+
+    </div>
+
+
+
+    <!-- NAVIGATION -->
+
+    <div class="sidebar-content">
+
+        <div class="sidebar-section-title">
+            Naviqasiya
+        </div>
+
+
+        <!-- ANA SƏHİFƏ -->
+
+        <a
+            href="/"
+            class="sidebar-link">
+
+            <i class="fa-solid fa-house"></i>
+
+            <span>
+                Ana səhifə
+            </span>
+
+        </a>
+
+
+        <!-- KÖMƏK -->
+
+        <a
+            href="/help"
+            class="sidebar-link">
+
+            <i class="fa-solid fa-circle-question"></i>
+
+            <span>
+                Kömək
+            </span>
+
+        </a>
+
+
+        <!-- GİZLİLİK -->
+
+        <a
+            href="/privacy"
+            class="sidebar-link">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+            <span>
+                Gizlilik siyasəti
+            </span>
+
+        </a>
+
+
+        <!-- ADA PRO -->
+
+        <a
+            href="/adapro"
+            class="sidebar-link">
+
+            <i class="fa-solid fa-bolt"></i>
+
+            <span>
+                ADA Pro
+            </span>
+
+        </a>
+
+
+        <!-- LIMIT -->
+
+        <a
+            href="/limit"
+            class="sidebar-link active">
+
+            <i class="fa-solid fa-chart-pie"></i>
+
+            <span>
+                İstifadə limiti
+            </span>
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ===================================================== -->
+
+    <div class="sidebar-footer">
+
+
+        <!-- SETTINGS -->
+
+        <div class="settings-dropdown-wrapper">
+
+            <button
+                class="settings-toggle-btn"
+                id="settingsToggleBtn">
+
+                <i class="fa-solid fa-gear"></i>
+
+                <span>
+                    Parametrlər
+                </span>
+
+                <i class="fa-solid fa-chevron-up arrow"></i>
+
+            </button>
+
+
+            <div
+                class="settings-menu"
+                id="settingsMenu">
+
+
+                <!-- THEME -->
+
+                <button
+                    class="settings-item"
+                    id="themeToggleItem">
+
+                    <i class="fa-solid fa-moon"></i>
+
+                    <span>
+                        Qaranlıq / Açıq Mod
+                    </span>
+
+                </button>
+
+
+                <!-- HELP -->
+
+                <a
+                    href="/help"
+                    class="settings-item">
+
+                    <i class="fa-solid fa-circle-question"></i>
+
+                    <span>
+                        Kömək
+                    </span>
+
+                </a>
+
+
+                <!-- PRIVACY -->
+
+                <a
+                    href="/privacy"
+                    class="settings-item">
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                    <span>
+                        Gizlilik
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- USER -->
+
+        <% if (locals.user) { %>
+
+            <div class="user-profile">
+
+                <div class="user-avatar">
+
+                    <% if (user.picture || user.profile_picture) { %>
+
+                        <img
+                            src="<%= user.picture || user.profile_picture %>"
+                            alt="Profil">
+
+                    <% } else { %>
+
+                        <i class="fa-solid fa-user"></i>
+
+                    <% } %>
+
+                </div>
+
+
+                <div class="user-info">
+
+                    <span class="user-name">
+                        <%= user.name || user.fullname %>
+                    </span>
+
+                    <span class="user-email">
+                        <%= user.email %>
+                    </span>
+
+                </div>
+
+
+                <a
+                    href="/logout"
+                    class="logout-btn"
+                    title="Hesabdan çıx">
+
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+
+                </a>
+
+            </div>
+
+
+        <% } else { %>
+
+
+            <a
+                href="/register"
+                class="login-btn">
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+
+                <span data-lang="login_register">
+                    Daxil ol / Qeydiyyat
+                </span>
+
+            </a>
+
+
+        <% } %>
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<main class="main-content">
+
+
+    <!-- HEADER -->
+
+    <div class="limit-header">
+
+        <span class="badge-limit">
+
+            <i class="fa-solid fa-chart-pie"></i>
+
+            <span data-lang="badge_limit">
+                İSTİFADƏ LİMİTİ
+            </span>
+
+        </span>
+
+
+        <h1 data-lang="limit_main_title">
+            Günlük Sorğu İzləmə Paneli
+        </h1>
+
+
+        <p data-lang="limit_subtitle">
+            Gündəlik AI sorğu limitlərinizi izləyin
+            və daha çox akademik resurs üçün
+            ADA Pro-ya keçid edərək limitlərinizi artırın.
+        </p>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         LIMIT CARD
+    ===================================================== -->
+
+    <div class="limit-main-card">
+
+
+        <div class="limit-card-header">
+
+            <span
+                class="limit-card-title"
+                data-lang="daily_query_limit">
+
+                Günlük AI Sorğu Limiti
+
+            </span>
+
+
+            <span
+                class="limit-status-badge"
+                data-lang="status_active">
+
+                Aktiv
+
+            </span>
+
+        </div>
+
+
+
+        <!-- PROGRESS -->
+
+        <div class="progress-bar-bg">
+
+            <div
+                class="progress-bar-fill"
+                style="width: <%= percentage %>%;">
+            </div>
+
+        </div>
+
+
+
+        <!-- STATS -->
+
+        <div class="limit-stats">
+
+            <span>
+
+                İstifadə olunan:
+
+                <strong class="limit-stat-value">
+
+                    <%= userLimit %> /
+                    <%= maxLimit %>
+
+                </strong>
+
+            </span>
+
+
+            <span>
+
+                Yenilənmə:
+
+                <strong class="limit-stat-value">
+
+                    00:00
+
+                </strong>
+
+            </span>
+
+        </div>
+
+
+
+        <!-- ADA PRO -->
+
+        <a
+            href="/adapro"
+            class="btn-upgrade-redirect">
+
+            <i class="fa-solid fa-bolt"></i>
+
+            <span data-lang="btn_increase_limit">
+                Limitləri Artır (ADA Pro)
+            </span>
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INFO
+    ===================================================== -->
+
+    <div class="info-box">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+
+        <div>
+
+            <h4 data-lang="info_box_title">
+                Limitlər necə işləyir?
+            </h4>
+
+
+            <p data-lang="info_box_desc">
+                Standart hesablar üçün günlük 50,
+                Daxil olmuş istifadəçilər üçün 150
+                sorğu limiti verilir və hər gecə saat
+                00:00-da avtomatik sıfırlanır.
+                Limitsiz təcrübə üçün ADA Pro
+                abunəliyini aktivləşdirə bilərsiniz.
+            </p>
+
+        </div>
+
+    </div>
+
+
+</main>
+
+
+
+<script>
+
+    /* =====================================================
+       ELEMENTS
+    ===================================================== */
+
+    const sidebar =
+        document.getElementById('sidebar');
+
+    const sidebarOverlay =
+        document.getElementById('sidebarOverlay');
+
+    const menuToggleBtn =
+        document.getElementById('menuToggleBtn');
+
+    const closeSidebarBtn =
+        document.getElementById('closeSidebarBtn');
+
+    const settingsToggleBtn =
+        document.getElementById('settingsToggleBtn');
+
+    const settingsMenu =
+        document.getElementById('settingsMenu');
+
+    const themeToggleItem =
+        document.getElementById('themeToggleItem');
+
+
+
+    /* =====================================================
+       SIDEBAR OPEN
+    ===================================================== */
+
+    function openSidebar() {
+
+        if (!sidebar) return;
+
+        sidebar.classList.add('open');
+        sidebar.classList.add('active');
+
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.add('active');
+        }
+
+    }
+
+
+
+    /* =====================================================
+       SIDEBAR CLOSE
+    ===================================================== */
+
+    function closeSidebar() {
+
+        if (!sidebar) return;
+
+        sidebar.classList.remove('open');
+        sidebar.classList.remove('active');
+
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+        }
+
+    }
+
+
+
+    /* =====================================================
+       SIDEBAR TOGGLE
+    ===================================================== */
+
+    function toggleSidebar() {
+
+        if (!sidebar) return;
+
+        if (
+            sidebar.classList.contains('open') ||
+            sidebar.classList.contains('active')
+        ) {
+
+            closeSidebar();
+
+        } else {
+
+            openSidebar();
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       MOBILE MENU
+    ===================================================== */
+
+    if (menuToggleBtn) {
+
+        menuToggleBtn.addEventListener(
+            'click',
+            function(e) {
+
+                e.stopPropagation();
+
+                toggleSidebar();
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       CLOSE BUTTON
+    ===================================================== */
+
+    if (closeSidebarBtn) {
+
+        closeSidebarBtn.addEventListener(
+            'click',
+            closeSidebar
+        );
+
+    }
+
+
+
+    /* =====================================================
+       OVERLAY
+    ===================================================== */
+
+    if (sidebarOverlay) {
+
+        sidebarOverlay.addEventListener(
+            'click',
+            closeSidebar
+        );
+
+    }
+
+
+
+    /* =====================================================
+       CLOSE SIDEBAR AFTER LINK CLICK
+    ===================================================== */
+
+    document
+        .querySelectorAll('.sidebar-link, .new-chat-btn, .login-btn')
+        .forEach(function(link) {
+
+            link.addEventListener(
+                'click',
+                function() {
+
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
+
+                }
+            );
+
+        });
+
+
+
+    /* =====================================================
+       SETTINGS
+    ===================================================== */
+
+    if (
+        settingsToggleBtn &&
+        settingsMenu
+    ) {
+
+        settingsToggleBtn.addEventListener(
+            'click',
+            function(e) {
+
+                e.stopPropagation();
+
+                const active =
+                    settingsMenu.classList.toggle('active');
+
+                settingsToggleBtn.classList.toggle(
+                    'active',
+                    active
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       SETTINGS LINKS
+    ===================================================== */
+
+    if (settingsMenu) {
+
+        settingsMenu
+            .querySelectorAll('a')
+            .forEach(function(link) {
+
+                link.addEventListener(
+                    'click',
+                    function() {
+
+                        settingsMenu.classList.remove(
+                            'active'
+                        );
+
+                        if (settingsToggleBtn) {
+
+                            settingsToggleBtn.classList.remove(
+                                'active'
+                            );
+
+                        }
+
+                    }
+                );
+
+            });
+
+    }
+
+
+
+    /* =====================================================
+       OUTSIDE CLICK
+    ===================================================== */
+
+    document.addEventListener(
+        'click',
+        function(e) {
+
+
+            if (
+                settingsMenu &&
+                settingsToggleBtn
+            ) {
+
+                if (
+                    !settingsToggleBtn.contains(e.target) &&
+                    !settingsMenu.contains(e.target)
+                ) {
+
+                    settingsMenu.classList.remove(
+                        'active'
+                    );
+
+                    settingsToggleBtn.classList.remove(
+                        'active'
+                    );
+
+                }
+
+            }
+
+
+            if (
+                window.innerWidth <= 768 &&
+                sidebar &&
+                sidebar.classList.contains('open')
+            ) {
+
+                if (
+                    !sidebar.contains(e.target) &&
+                    !menuToggleBtn.contains(e.target)
+                ) {
+
+                    closeSidebar();
+
+                }
+
+            }
+
+        }
+    );
+
+
+
+    /* =====================================================
+       THEME BUTTON
+    ===================================================== */
+
+    function updateThemeButton() {
+
+        if (!themeToggleItem) return;
+
+
+        const icon =
+            themeToggleItem.querySelector('i');
+
+        const text =
+            themeToggleItem.querySelector('span');
+
+
+        if (
+            document.body.classList.contains(
+                'light-mode'
+            )
+        ) {
+
+            if (icon) {
+
+                icon.className =
+                    'fa-solid fa-sun';
+
+            }
+
+        } else {
+
+            if (icon) {
+
+                icon.className =
+                    'fa-solid fa-moon';
+
+            }
+
+        }
+
+
+        if (text) {
+
+            text.textContent =
+                'Qaranlıq / Açıq Mod';
+
+        }
+
+    }
+
+
+
+    /* =====================================================
+       APPLY THEME
+    ===================================================== */
+
+    function applyTheme(theme) {
+
+        if (theme === 'light') {
+
+            document.body.classList.add(
+                'light-mode'
+            );
+
+        } else {
+
+            document.body.classList.remove(
+                'light-mode'
+            );
+
+        }
+
+
+        updateThemeButton();
+
+    }
+
+
+
+    /* =====================================================
+       LOAD THEME
+    ===================================================== */
+
+    const savedTheme =
+        localStorage.getItem('theme');
+
+
+    if (savedTheme === 'light') {
+
+        applyTheme('light');
+
+    } else {
+
+        applyTheme('dark');
+
+    }
+
+
+
+    /* =====================================================
+       THEME TOGGLE
+    ===================================================== */
+
+    if (themeToggleItem) {
+
+        themeToggleItem.addEventListener(
+            'click',
+            function(e) {
+
+                e.preventDefault();
+
+                const isLight =
+                    document.body.classList.contains(
+                        'light-mode'
+                    );
+
+
+                if (isLight) {
+
+                    applyTheme('dark');
+
+                    localStorage.setItem(
+                        'theme',
+                        'dark'
+                    );
+
+                } else {
+
+                    applyTheme('light');
+
+                    localStorage.setItem(
+                        'theme',
+                        'light'
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       ESC KEY
+    ===================================================== */
+
+    document.addEventListener(
+        'keydown',
+        function(e) {
+
+            if (e.key === 'Escape') {
+
+                closeSidebar();
+
+
+                if (settingsMenu) {
+
+                    settingsMenu.classList.remove(
+                        'active'
+                    );
+
+                }
+
+
+                if (settingsToggleBtn) {
+
+                    settingsToggleBtn.classList.remove(
+                        'active'
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+
+
+    /* =====================================================
+       LANGUAGE
+    ===================================================== */
+
+    function applyAutoTranslation(lang) {
+
+        const currentLang =
+            lang ||
+            localStorage.getItem('userLanguage') ||
+            'az';
+
+
+        document
+            .querySelectorAll('[data-lang]')
+            .forEach(function(el) {
+
+                const key =
+                    el.getAttribute('data-lang');
+
+
+                if (
+                    typeof dictionary !== 'undefined' &&
+                    dictionary[key]
+                ) {
+
+                    if (
+                        dictionary[key][currentLang]
+                    ) {
+
+                        el.textContent =
+                            dictionary[key][currentLang];
+
+                    }
+
+                    else if (
+                        dictionary[key]['az']
+                    ) {
+
+                        el.textContent =
+                            dictionary[key]['az'];
+
+                    }
+
+                }
+
+                else if (
+                    typeof translations !== 'undefined' &&
+                    translations[currentLang] &&
+                    translations[currentLang][key]
+                ) {
+
+                    el.textContent =
+                        translations[currentLang][key];
+
+                }
+
+            });
+
+    }
+
+
+
+    /* =====================================================
+       DOM READY
+    ===================================================== */
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        function() {
+
+            const lang =
+                localStorage.getItem(
+                    'userLanguage'
+                ) || 'az';
+
+
+            applyAutoTranslation(lang);
+
+            updateThemeButton();
+
+        }
+    );
+
+
+
+    /* =====================================================
+       STORAGE SYNC
+    ===================================================== */
+
+    window.addEventListener(
+        'storage',
+        function(event) {
+
+
+            if (
+                [
+                    'userLanguage',
+                    'app_lang',
+                    'lang',
+                    'language',
+                    'site_language'
+                ].includes(event.key)
+            ) {
+
+                applyAutoTranslation(
+                    event.newValue || 'az'
+                );
+
+            }
+
+
+            if (event.key === 'theme') {
+
+                applyTheme(
+                    event.newValue || 'dark'
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+</html>

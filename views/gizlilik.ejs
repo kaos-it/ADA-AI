@@ -1,0 +1,2697 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gizlilik Siyasəti - ADA Student AI</title>
+
+    <!-- =========================================================
+         FONT AWESOME
+    ========================================================== -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- =========================================================
+         DOMPURIFY
+    ========================================================== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <!-- Markdown Parser & DOMPurify (XSS Təhlükəsizliyi üçün) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="/js/language.js"></script>
+
+  <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
+
+    <style>
+
+        /* =========================================================
+           RESET
+        ========================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--body-bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+
+            transition:
+                background .25s ease,
+                color .25s ease;
+        }
+
+
+        /* =========================================================
+           ROOT VARIABLES
+        ========================================================== */
+
+        :root {
+
+            --body-bg: #020617;
+
+            --sidebar-bg: #0f172a;
+            --sidebar-border: #1e293b;
+
+            --surface: #0f172a;
+            --surface-hover: #111c31;
+
+            --border: #1e293b;
+            --border-hover: #334155;
+
+            --text: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --blue-light: #60a5fa;
+
+            --blue-soft: rgba(37, 99, 235, .13);
+
+            --overlay: rgba(0, 0, 0, .55);
+
+            --shadow:
+                0 15px 40px rgba(0, 0, 0, .20);
+        }
+
+
+        /* =========================================================
+           SIDEBAR
+        ========================================================== */
+
+        .sidebar {
+
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 280px;
+            height: 100vh;
+
+            background: var(--sidebar-bg);
+            color: var(--text);
+
+            display: flex;
+            flex-direction: column;
+
+            z-index: 1000;
+
+            border-right:
+                1px solid var(--sidebar-border);
+
+            transition:
+                transform .3s ease,
+                background .25s ease,
+                border-color .25s ease;
+
+            box-shadow:
+                4px 0 20px rgba(0, 0, 0, .08);
+        }
+
+
+        /* =========================================================
+           SIDEBAR HEADER
+        ========================================================== */
+
+        .sidebar-header {
+
+            height: 72px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 16px;
+
+            border-bottom:
+                1px solid var(--sidebar-border);
+
+            flex-shrink: 0;
+        }
+
+
+        .logo-area {
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            min-width: 0;
+        }
+
+
+        .sidebar-logo {
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            object-fit: cover;
+
+            flex-shrink: 0;
+
+            border:
+                1px solid var(--border-hover);
+
+            box-shadow:
+                0 3px 12px rgba(0, 0, 0, .20);
+        }
+
+
+        .sidebar-title {
+
+            font-size: 16px;
+
+            font-weight: 650;
+
+            letter-spacing: -.4px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .close-sidebar-btn {
+
+            width: 34px;
+            height: 34px;
+
+            display: none;
+
+            align-items: center;
+            justify-content: center;
+
+            background: transparent;
+
+            border: none;
+
+            color: var(--text-muted);
+
+            font-size: 18px;
+
+            cursor: pointer;
+
+            border-radius: 8px;
+
+            transition: .2s;
+        }
+
+
+        .close-sidebar-btn:hover {
+
+            background:
+                rgba(148, 163, 184, .10);
+
+            color: var(--text);
+        }
+
+
+        /* =========================================================
+           NEW CHAT AREA
+        ========================================================== */
+
+        .sidebar-action-area {
+
+            padding: 16px;
+
+            flex-shrink: 0;
+        }
+
+
+        .new-chat-btn {
+
+            width: 100%;
+
+            background: var(--blue);
+
+            color: #fff;
+
+            border: none;
+
+            border-radius: 9px;
+
+            padding: 11px 14px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 9px;
+
+            transition:
+                background .2s ease,
+                transform .2s ease,
+                box-shadow .2s ease;
+        }
+
+
+        .new-chat-btn:hover {
+
+            background: var(--blue-hover);
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(37, 99, 235, .22);
+        }
+
+
+        .new-chat-btn:active {
+
+            transform: translateY(0);
+        }
+
+
+        /* =========================================================
+           SIDEBAR CENTER
+        ========================================================== */
+
+        .sidebar-history-container {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 0 12px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+
+            min-height: 0;
+        }
+
+
+        .sidebar-section-title {
+
+            padding: 8px 10px;
+
+            margin-top: 4px;
+
+            color: var(--text-dim);
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .8px;
+        }
+
+
+        /* =========================================================
+           SIDEBAR NAV LINKS
+        ========================================================== */
+
+        .sidebar-nav-link {
+
+            width: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            padding: 11px 12px;
+
+            border-radius: 8px;
+
+            color: var(--text-secondary);
+
+            text-decoration: none;
+
+            font-size: 13.5px;
+
+            transition:
+                background .2s ease,
+                color .2s ease,
+                transform .2s ease;
+        }
+
+
+        .sidebar-nav-link i {
+
+            width: 20px;
+
+            text-align: center;
+
+            font-size: 15px;
+
+            color: var(--text-muted);
+
+            transition: .2s;
+        }
+
+
+        .sidebar-nav-link:hover {
+
+            background:
+                rgba(148, 163, 184, .08);
+
+            color: var(--text);
+
+            transform: translateX(2px);
+        }
+
+
+        .sidebar-nav-link:hover i {
+
+            color: var(--blue-light);
+        }
+
+
+        .sidebar-nav-link.active {
+
+            background:
+                rgba(37, 99, 235, .12);
+
+            color: #93c5fd;
+        }
+
+
+        .sidebar-nav-link.active i {
+
+            color: #60a5fa;
+        }
+
+
+        /* =========================================================
+           SIDEBAR SCROLLBAR
+        ========================================================== */
+
+        .sidebar-history-container::-webkit-scrollbar {
+
+            width: 5px;
+        }
+
+
+        .sidebar-history-container::-webkit-scrollbar-track {
+
+            background: transparent;
+        }
+
+
+        .sidebar-history-container::-webkit-scrollbar-thumb {
+
+            background: #334155;
+
+            border-radius: 20px;
+        }
+
+
+        .sidebar-history-container::-webkit-scrollbar-thumb:hover {
+
+            background: #475569;
+        }
+
+
+        /* =========================================================
+           SIDEBAR FOOTER
+        ========================================================== */
+
+        .sidebar-footer {
+
+            padding: 14px 16px 16px;
+
+            border-top:
+                1px solid var(--sidebar-border);
+
+            flex-shrink: 0;
+        }
+
+
+        .sidebar-footer-actions {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+        }
+
+
+        .sidebar-footer-btn {
+
+            width: 100%;
+
+            background: transparent;
+
+            border: none;
+
+            color: var(--text-secondary);
+
+            padding: 10px;
+
+            font-size: 13.5px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            text-decoration: none;
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .sidebar-footer-btn i {
+
+            width: 20px;
+
+            text-align: center;
+
+            color: var(--text-muted);
+
+            transition: .2s;
+        }
+
+
+        .sidebar-footer-btn:hover {
+
+            background:
+                rgba(148, 163, 184, .08);
+
+            color: var(--text);
+        }
+
+
+        .sidebar-footer-btn:hover i {
+
+            color: var(--blue-light);
+        }
+
+
+        /* =========================================================
+           USER AREA
+        ========================================================== */
+
+        .sidebar-user {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 10px;
+
+            margin-top: 5px;
+
+            border-radius: 9px;
+
+            text-decoration: none;
+
+            color: var(--text-secondary);
+
+            transition:
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .sidebar-user:hover {
+
+            background:
+                rgba(148, 163, 184, .08);
+
+            color: var(--text);
+        }
+
+
+        .sidebar-user-avatar {
+
+            width: 34px;
+            height: 34px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #1e3a8a;
+
+            color: #bfdbfe;
+
+            flex-shrink: 0;
+        }
+
+
+        .sidebar-user-info {
+
+            min-width: 0;
+        }
+
+
+        .sidebar-user-name {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: var(--text);
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .sidebar-user-role {
+
+            font-size: 11px;
+
+            color: var(--text-dim);
+
+            margin-top: 2px;
+        }
+
+
+        /* =========================================================
+           SIDEBAR OVERLAY
+        ========================================================== */
+
+        .sidebar-overlay {
+
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background: var(--overlay);
+
+            z-index: 999;
+
+            display: none;
+
+            opacity: 0;
+
+            transition:
+                opacity .3s ease;
+        }
+
+
+        .sidebar-overlay.active {
+
+            display: block;
+
+            opacity: 1;
+        }
+
+
+        /* =========================================================
+           MAIN CONTENT
+        ========================================================== */
+
+        .main-content {
+
+            margin-left: 280px;
+
+            width:
+                calc(100% - 280px);
+
+            min-height: 100vh;
+
+            padding: 40px;
+
+            transition:
+                margin-left .3s ease,
+                width .3s ease;
+        }
+
+
+        /* =========================================================
+           PAGE HEADER
+        ========================================================== */
+
+        .privacy-header {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+            margin-bottom: 30px;
+
+            border-bottom:
+                1px solid var(--border);
+
+            padding-bottom: 20px;
+        }
+
+
+        .menu-toggle-btn {
+
+            background: transparent;
+
+            border: none;
+
+            color: var(--text);
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            display: none;
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 8px;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        .menu-toggle-btn:hover {
+
+            background:
+                rgba(148, 163, 184, .08);
+        }
+
+
+        .privacy-header h1 {
+
+            font-size: 25px;
+
+            font-weight: 600;
+
+            color: var(--text);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+
+        .privacy-header h1 i {
+
+            color: var(--blue-light);
+        }
+
+
+        /* =========================================================
+           INTRO CARD
+        ========================================================== */
+
+        .privacy-intro {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(37, 99, 235, .13),
+                    rgba(15, 23, 42, .90)
+                );
+
+            border:
+                1px solid #1e3a8a;
+
+            border-radius: 16px;
+
+            padding: 28px;
+
+            margin-bottom: 22px;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+
+        .privacy-intro::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 180px;
+            height: 180px;
+
+            right: -70px;
+            top: -70px;
+
+            background:
+                rgba(37, 99, 235, .12);
+
+            border-radius: 50%;
+        }
+
+
+        .privacy-intro-icon {
+
+            width: 54px;
+            height: 54px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(37, 99, 235, .15);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #60a5fa;
+
+            font-size: 23px;
+
+            margin-bottom: 18px;
+
+            position: relative;
+
+            z-index: 1;
+        }
+
+
+        .privacy-intro h2 {
+
+            font-size: 21px;
+
+            margin-bottom: 10px;
+
+            color: var(--text);
+
+            position: relative;
+
+            z-index: 1;
+        }
+
+
+        .privacy-intro p {
+
+            color: var(--text-muted);
+
+            font-size: 14.5px;
+
+            line-height: 1.7;
+
+            max-width: 900px;
+
+            position: relative;
+
+            z-index: 1;
+        }
+
+
+        /* =========================================================
+           PRIVACY CARD
+        ========================================================== */
+
+        .privacy-card {
+
+            background:
+                var(--surface);
+
+            border:
+                1px solid var(--border);
+
+            border-radius: 14px;
+
+            padding: 25px;
+
+            margin-bottom: 18px;
+
+            transition:
+                transform .2s ease,
+                border-color .2s ease,
+                box-shadow .2s ease,
+                background .25s ease;
+        }
+
+
+        .privacy-card:hover {
+
+            transform:
+                translateY(-2px);
+
+            border-color:
+                var(--border-hover);
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, .18);
+        }
+
+
+        .privacy-card h3 {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            color: #93c5fd;
+
+            font-size: 18px;
+
+            margin-bottom: 13px;
+        }
+
+
+        .privacy-card h3 i {
+
+            color: var(--blue-light);
+
+            width: 22px;
+
+            text-align: center;
+        }
+
+
+        .privacy-card p,
+        .privacy-card li {
+
+            color: var(--text-muted);
+
+            font-size: 14.5px;
+
+            line-height: 1.7;
+        }
+
+
+        .privacy-card ul {
+
+            padding-left: 22px;
+
+            margin-top: 10px;
+        }
+
+
+        .privacy-card li {
+
+            margin-bottom: 7px;
+        }
+
+
+        .privacy-card strong {
+
+            color: #e2e8f0;
+        }
+
+
+        /* =========================================================
+           INFO BOX
+        ========================================================== */
+
+        .info-box {
+
+            margin-top: 15px;
+
+            padding: 15px 16px;
+
+            background:
+                rgba(37, 99, 235, .07);
+
+            border:
+                1px solid rgba(96, 165, 250, .18);
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 12px;
+        }
+
+
+        .info-box i {
+
+            color: #60a5fa;
+
+            margin-top: 3px;
+
+            flex-shrink: 0;
+        }
+
+
+        .info-box span {
+
+            color: var(--text-muted);
+
+            font-size: 13.5px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =========================================================
+           CONTACT CARD
+        ========================================================== */
+
+        .contact-card {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(245, 158, 11, .08),
+                    rgba(15, 23, 42, .95)
+                );
+
+            border:
+                1px solid rgba(245, 158, 11, .2);
+
+            border-left:
+                4px solid #f59e0b;
+        }
+
+
+        .contact-card h3 {
+
+            color: #fbbf24;
+        }
+
+
+        .contact-card h3 i {
+
+            color: #f59e0b;
+        }
+
+
+        .email-link {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            margin-top: 10px;
+
+            color: #f59e0b;
+
+            font-weight: bold;
+
+            text-decoration: none;
+
+            transition: .2s;
+        }
+
+
+        .email-link:hover {
+
+            color: #fbbf24;
+
+            text-decoration: underline;
+        }
+
+
+        /* =========================================================
+           LAST UPDATE
+        ========================================================== */
+
+        .last-update {
+
+            text-align: center;
+
+            color: var(--text-dim);
+
+            font-size: 12.5px;
+
+            margin-top: 28px;
+
+            padding-bottom: 20px;
+        }
+
+
+        /* =========================================================
+           LIGHT MODE
+        ========================================================== */
+
+        body.light-mode {
+
+            --body-bg: #f8fafc;
+
+            --sidebar-bg: #ffffff;
+
+            --sidebar-border: #e2e8f0;
+
+            --surface: #ffffff;
+
+            --surface-hover: #f8fafc;
+
+            --border: #e2e8f0;
+
+            --border-hover: #cbd5e1;
+
+            --text: #0f172a;
+
+            --text-secondary: #475569;
+
+            --text-muted: #475569;
+
+            --text-dim: #64748b;
+
+            --overlay:
+                rgba(15, 23, 42, .38);
+
+            --shadow:
+                0 15px 40px
+                rgba(15, 23, 42, .08);
+        }
+
+
+        body.light-mode .privacy-intro {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eff6ff,
+                    #ffffff
+                );
+
+            border-color:
+                #dbeafe;
+        }
+
+
+        body.light-mode .privacy-intro h2 {
+
+            color: #0f172a;
+        }
+
+
+        body.light-mode .privacy-card strong {
+
+            color: #1e293b;
+        }
+
+
+        body.light-mode .privacy-card:hover {
+
+            box-shadow:
+                0 10px 30px
+                rgba(15, 23, 42, .06);
+        }
+
+
+        body.light-mode .contact-card {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fffbeb,
+                    #ffffff
+                );
+
+            border-color:
+                #fde68a;
+
+            border-left-color:
+                #f59e0b;
+        }
+
+
+        body.light-mode .sidebar-nav-link.active {
+
+            background:
+                #eff6ff;
+
+            color:
+                #2563eb;
+        }
+
+
+        body.light-mode .sidebar-nav-link.active i {
+
+            color:
+                #2563eb;
+        }
+
+
+        body.light-mode .sidebar-logo {
+
+            border-color:
+                #e2e8f0;
+        }
+
+
+        body.light-mode .sidebar-user-avatar {
+
+            background:
+                #dbeafe;
+
+            color:
+                #2563eb;
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================== */
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+
+                transform:
+                    translateX(-100%) !important;
+
+                box-shadow:
+                    10px 0 35px
+                    rgba(0, 0, 0, .18);
+            }
+
+
+            .sidebar.active,
+            .sidebar.open {
+
+                transform:
+                    translateX(0) !important;
+            }
+
+
+            .close-sidebar-btn {
+
+                display:
+                    flex !important;
+            }
+
+
+            .main-content {
+
+                margin-left:
+                    0 !important;
+
+                width:
+                    100% !important;
+
+                padding:
+                    22px 16px !important;
+            }
+
+
+            .menu-toggle-btn {
+
+                display:
+                    flex !important;
+            }
+
+
+            .privacy-header {
+
+                margin-bottom:
+                    22px;
+
+                padding-bottom:
+                    16px;
+            }
+
+
+            .privacy-header h1 {
+
+                font-size:
+                    19px !important;
+            }
+
+
+            .privacy-intro {
+
+                padding:
+                    21px;
+            }
+
+
+            .privacy-intro h2 {
+
+                font-size:
+                    18px;
+            }
+
+
+            .privacy-card {
+
+                padding:
+                    18px;
+            }
+
+
+            .privacy-card h3 {
+
+                font-size:
+                    16px;
+            }
+
+
+            .privacy-card p,
+            .privacy-card li {
+
+                font-size:
+                    14px;
+            }
+        }
+
+
+        /* =========================================================
+           SMALL MOBILE
+        ========================================================== */
+
+        @media (max-width: 480px) {
+
+            .main-content {
+
+                padding:
+                    18px 12px !important;
+            }
+
+
+            .privacy-header {
+
+                gap:
+                    8px;
+            }
+
+
+            .privacy-header h1 {
+
+                font-size:
+                    17px !important;
+            }
+
+
+            .privacy-intro {
+
+                padding:
+                    18px;
+
+                border-radius:
+                    12px;
+            }
+
+
+            .privacy-card {
+
+                padding:
+                    16px;
+
+                border-radius:
+                    12px;
+            }
+
+
+            .privacy-intro-icon {
+
+                width:
+                    46px;
+
+                height:
+                    46px;
+
+                font-size:
+                    19px;
+            }
+
+
+            .sidebar {
+
+                width:
+                    285px;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         SIDEBAR OVERLAY
+    ========================================================== -->
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay">
+    </div>
+
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+
+    <aside
+        class="sidebar"
+        id="sidebar">
+
+
+        <!-- =====================================================
+             SIDEBAR HEADER
+        ====================================================== -->
+
+        <div class="sidebar-header">
+
+            <div class="logo-area">
+
+                <img
+                    src="/ada-logo.jpeg"
+                    class="sidebar-logo"
+                    alt="ADA Student AI">
+
+                <span class="sidebar-title">
+                    ADA Student AI
+                </span>
+
+            </div>
+
+
+            <button
+                class="close-sidebar-btn"
+                id="closeSidebarBtn"
+                type="button"
+                aria-label="Menyunu bağla">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             NEW CHAT
+        ====================================================== -->
+
+        <div class="sidebar-action-area">
+
+            <button
+                class="new-chat-btn"
+                id="newChatBtn"
+                type="button">
+
+                <i class="fa-solid fa-plus"></i>
+
+                <span>
+                    Yeni söhbət
+                </span>
+
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             NAVIGATION
+        ====================================================== -->
+
+        <div class="sidebar-history-container">
+
+
+            <div class="sidebar-section-title">
+                Naviqasiya
+            </div>
+
+
+            <!-- =================================================
+                 AI CHAT
+            ================================================== -->
+
+            <a
+                href="/"
+                class="sidebar-nav-link">
+
+                <i class="fa-solid fa-message"></i>
+
+                <span>
+                    AI Çat
+                </span>
+
+            </a>
+
+
+            <!-- =================================================
+                 HELP
+            ================================================== -->
+
+            <a
+                href="/help"
+                class="sidebar-nav-link">
+
+                <i class="fa-solid fa-circle-question"></i>
+
+                <span>
+                    Yardım
+                </span>
+
+            </a>
+
+
+            <!-- =================================================
+                 LIMIT
+            ================================================== -->
+
+            <a
+                href="/limit"
+                class="sidebar-nav-link">
+
+                <i class="fa-solid fa-gauge-high"></i>
+
+                <span>
+                    İstifadə limiti
+                </span>
+
+            </a>
+
+
+            <!-- =================================================
+                 PRIVACY - ACTIVE
+            ================================================== -->
+
+            <a
+                href="/gizlilik"
+                class="sidebar-nav-link active">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <span>
+                    Gizlilik siyasəti
+                </span>
+
+            </a>
+
+
+        </div>
+
+
+        <!-- =====================================================
+             SIDEBAR FOOTER
+        ====================================================== -->
+
+        <div class="sidebar-footer">
+
+
+            <div class="sidebar-footer-actions">
+
+
+                <!-- =================================================
+                     THEME
+                ================================================== -->
+
+                <button
+                    class="sidebar-footer-btn"
+                    id="themeToggleBtn"
+                    type="button">
+
+                    <i
+                        class="fa-solid fa-sun"
+                        id="themeIcon">
+                    </i>
+
+                    <span id="themeText">
+                        Açıq rejimə keç
+                    </span>
+
+                </button>
+
+
+                <!-- =================================================
+                     CHAT
+                ================================================== -->
+
+                <a
+                    href="/"
+                    class="sidebar-footer-btn">
+
+                    <i class="fa-solid fa-arrow-right"></i>
+
+                    <span>
+                        Çata keçid et
+                    </span>
+
+                </a>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 USER
+            ================================================== -->
+
+            <% if (locals.user) { %>
+
+                <a
+                    href="/profile"
+                    class="sidebar-user">
+
+                    <div class="sidebar-user-avatar">
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+
+                    <div class="sidebar-user-info">
+
+                        <div class="sidebar-user-name">
+
+                            <%= locals.user.name ||
+                                locals.user.username ||
+                                locals.user.email ||
+                                'İstifadəçi' %>
+
+                        </div>
+
+                        <div class="sidebar-user-role">
+
+                            Hesabım
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+            <% } else { %>
+
+
+                <a
+                    href="/login"
+                    class="sidebar-user">
+
+                    <div class="sidebar-user-avatar">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+
+                    </div>
+
+
+                    <div class="sidebar-user-info">
+
+                        <div class="sidebar-user-name">
+                            Hesaba daxil ol
+                        </div>
+
+                        <div class="sidebar-user-role">
+                            Giriş / Qeydiyyat
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+            <% } %>
+
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =====================================================
+             PAGE HEADER
+        ====================================================== -->
+
+        <div class="privacy-header">
+
+
+            <button
+                class="menu-toggle-btn"
+                id="menuToggleBtn"
+                type="button"
+                aria-label="Menyunu aç">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+
+            <h1>
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                Gizlilik Siyasəti
+
+            </h1>
+
+
+        </div>
+
+
+        <!-- =====================================================
+             INTRO
+        ====================================================== -->
+
+        <section class="privacy-intro">
+
+
+            <div class="privacy-intro-icon">
+
+                <i class="fa-solid fa-lock"></i>
+
+            </div>
+
+
+            <h2>
+                Məlumatlarınızın təhlükəsizliyi bizim üçün vacibdir
+            </h2>
+
+
+            <p>
+
+                ADA Student AI platformasından istifadə edərkən
+                məxfiliyinizə və şəxsi məlumatlarınızın qorunmasına
+                xüsusi diqqət yetiririk. Bu səhifədə hansı məlumatların
+                toplana biləcəyi, onların hansı məqsədlə istifadə
+                edildiyi və məlumatların qorunması ilə bağlı əsas
+                prinsiplər izah olunur.
+
+            </p>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             1. ÜMUMİ MƏLUMAT
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                1. Ümumi məlumat
+
+            </h3>
+
+
+            <p>
+
+                <strong>ADA Student AI</strong> təhsil məqsədilə
+                hazırlanmış süni intellekt platformasıdır.
+                Platformanın əsas məqsədi istifadəçilərə dərslərin
+                öyrənilməsi, sualların cavablandırılması və müxtəlif
+                təhsil tapşırıqlarında kömək göstərməkdir.
+
+            </p>
+
+
+            <div class="info-box">
+
+                <i class="fa-solid fa-lightbulb"></i>
+
+                <span>
+
+                    Platformadan istifadə etməklə siz bu səhifədə
+                    göstərilən məxfilik prinsipləri ilə tanış olduğunuzu
+                    təsdiqləmiş olursunuz.
+
+                </span>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             2. TOPLANA BİLƏN MƏLUMATLAR
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-database"></i>
+
+                2. Toplana bilən məlumatlar
+
+            </h3>
+
+
+            <p>
+
+                Platformadan istifadə zamanı xidmətlərin düzgün
+                işləməsi üçün müəyyən məlumatlar sistem tərəfindən
+                emal edilə bilər.
+
+            </p>
+
+
+            <ul>
+
+                <li>
+                    Hesab yaradılarkən təqdim etdiyiniz ad və
+                    e-poçt məlumatları.
+                </li>
+
+                <li>
+                    Hesab və giriş məlumatları.
+                </li>
+
+                <li>
+                    ADA Student AI ilə apardığınız söhbətlərin
+                    sistem tərəfindən saxlanılan tarixçəsi.
+                </li>
+
+                <li>
+                    Platformanın işləməsi üçün tələb olunan texniki
+                    məlumatlar.
+                </li>
+
+                <li>
+                    Könüllü şəkildə yüklədiyiniz şəkil və digər
+                    məzmunlar.
+                </li>
+
+            </ul>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             3. MƏLUMATLARDAN İSTİFADƏ
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-gears"></i>
+
+                3. Məlumatlardan necə istifadə olunur?
+
+            </h3>
+
+
+            <p>
+
+                Toplanan və ya istifadəçi tərəfindən təqdim edilən
+                məlumatlar əsasən xidmətin təqdim edilməsi və
+                platformanın işlək vəziyyətdə saxlanılması üçün
+                istifadə olunur.
+
+            </p>
+
+
+            <ul>
+
+                <li>
+                    Hesabınızı idarə etmək və sizi autentifikasiya etmək.
+                </li>
+
+                <li>
+                    Söhbət tarixçəsini göstərmək və idarə etmək.
+                </li>
+
+                <li>
+                    Süni intellekt xidmətlərinin işləməsini təmin etmək.
+                </li>
+
+                <li>
+                    Platformanın texniki problemlərini aşkar etmək və
+                    xidmətin keyfiyyətini yaxşılaşdırmaq.
+                </li>
+
+                <li>
+                    Təhlükəsizlik və sui-istifadənin qarşısının
+                    alınmasına kömək etmək.
+                </li>
+
+            </ul>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             4. SÖHBƏT VƏ AI SORĞULARI
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-comments"></i>
+
+                4. Söhbət və AI sorğuları
+
+            </h3>
+
+
+            <p>
+
+                ADA Student AI-yə göndərdiyiniz suallar və mesajlar
+                xidmətin cavab yaratması üçün emal edilə bilər.
+                Hesabınızla əlaqəli söhbət tarixçəsi platformada
+                istifadəçi təcrübəsini yaxşılaşdırmaq və əvvəlki
+                söhbətlərə qayıtmağa imkan vermək məqsədilə saxlanıla
+                bilər.
+
+            </p>
+
+
+            <div class="info-box">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>
+
+                    Parol, bank kartı məlumatları, API açarları və digər
+                    məxfi təhlükəsizlik məlumatlarını AI çatına
+                    göndərməməyiniz tövsiyə olunur.
+
+                </span>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             5. ŞƏKİL VƏ FAYLLAR
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-image"></i>
+
+                5. Şəkil və fayllar
+
+            </h3>
+
+
+            <p>
+
+                İstifadəçi tərəfindən söhbət zamanı yüklənən şəkillər
+                və digər fayllar sorğunun emal edilməsi üçün sistem
+                tərəfindən istifadə oluna bilər.
+
+            </p>
+
+
+            <p style="margin-top: 10px;">
+
+                Şəxsi və məxfi məlumatların olduğu sənədləri və
+                şəkilləri yalnız zəruri olduğu halda yükləməyiniz
+                tövsiyə olunur.
+
+            </p>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             6. TƏHLÜKƏSİZLİK
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                6. Məlumatların təhlükəsizliyi
+
+            </h3>
+
+
+            <p>
+
+                İstifadəçi məlumatlarının qorunması üçün texniki və
+                təşkilati təhlükəsizlik tədbirlərindən istifadə
+                edilməsinə çalışılır.
+
+            </p>
+
+
+            <ul>
+
+                <li>
+                    Hesab məlumatlarının qorunması.
+                </li>
+
+                <li>
+                    İcazəsiz girişlərin qarşısının alınmasına
+                    yönəlmiş təhlükəsizlik tədbirləri.
+                </li>
+
+                <li>
+                    Server və verilənlər bazasının qorunması.
+                </li>
+
+                <li>
+                    Sistem fəaliyyətlərinin monitorinqi və
+                    təhlükəsizlik tədbirlərinin təkmilləşdirilməsi.
+                </li>
+
+            </ul>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             7. ÜÇÜNCÜ TƏRƏF
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-network-wired"></i>
+
+                7. Üçüncü tərəf xidmətləri
+
+            </h3>
+
+
+            <p>
+
+                ADA Student AI-nin müəyyən funksiyalarının işləməsi
+                üçün üçüncü tərəf texnologiyalarından və xidmət
+                provayderlərindən istifadə oluna bilər.
+
+            </p>
+
+
+            <p style="margin-top: 10px;">
+
+                Bu xidmətlərə süni intellekt, autentifikasiya,
+                hosting, verilənlər bazası, analitika və digər texniki
+                xidmətlər daxil ola bilər.
+
+            </p>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             8. COOKIE
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-cookie-bite"></i>
+
+                8. Cookie və Local Storage
+
+            </h3>
+
+
+            <p>
+
+                Platformanın müəyyən funksiyalarında brauzerin
+                localStorage və ya oxşar texnologiyalarından istifadə
+                oluna bilər.
+
+            </p>
+
+
+            <ul>
+
+                <li>
+                    İstifadəçi interfeysinin seçimlərini yadda saxlamaq.
+                </li>
+
+                <li>
+                    Qaranlıq və açıq rejim seçimini yadda saxlamaq.
+                </li>
+
+                <li>
+                    Platformanın müəyyən istifadəçi parametrlərini
+                    qorumaq.
+                </li>
+
+            </ul>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             9. İSTİFADƏÇİ HÜQUQLARI
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-user-shield"></i>
+
+                9. İstifadəçi hüquqları
+
+            </h3>
+
+
+            <p>
+
+                İstifadəçilər öz hesabları və şəxsi məlumatları ilə
+                bağlı məlumat almaq, məlumatların düzəldilməsini
+                tələb etmək və mövcud olduqda hesab və məlumatların
+                silinməsi ilə bağlı müraciət etmək hüququna malik
+                ola bilərlər.
+
+            </p>
+
+
+            <div class="info-box">
+
+                <i class="fa-solid fa-envelope"></i>
+
+                <span>
+
+                    Belə müraciətlər üçün aşağıda göstərilən dəstək
+                    e-poçt ünvanından istifadə edə bilərsiniz.
+
+                </span>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             10. UŞAQLARIN MƏXFİLİYİ
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-children"></i>
+
+                10. Uşaqların məxfiliyi
+
+            </h3>
+
+
+            <p>
+
+                Platforma əsasən təhsil məqsədləri üçün nəzərdə
+                tutulmuşdur. Yetkinlik yaşına çatmayan istifadəçilərin
+                platformadan istifadəsi zamanı valideyn və ya qanuni
+                nümayəndənin nəzarəti tövsiyə olunur.
+
+            </p>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             11. DƏYİŞİKLİKLƏR
+        ====================================================== -->
+
+        <section class="privacy-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-file-pen"></i>
+
+                11. Gizlilik siyasətində dəyişikliklər
+
+            </h3>
+
+
+            <p>
+
+                Platformanın funksiyaları və xidmətləri zamanla
+                dəyişə bilər. Bu səbəbdən gizlilik siyasətinə
+                gələcəkdə əlavə və ya dəyişikliklər edilə bilər.
+
+            </p>
+
+
+            <p style="margin-top: 10px;">
+
+                Əhəmiyyətli dəyişikliklər olduqda istifadəçilərin
+                məlumatlandırılması üçün platformada müvafiq
+                bildirişlər göstərilə bilər.
+
+            </p>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             12. ƏLAQƏ
+        ====================================================== -->
+
+        <section class="privacy-card contact-card">
+
+
+            <h3>
+
+                <i class="fa-solid fa-headset"></i>
+
+                12. Əlaqə və dəstək
+
+            </h3>
+
+
+            <p>
+
+                Gizlilik, hesabınız və ya şəxsi məlumatlarınızla
+                bağlı hər hansı sualınız yaranarsa bizimlə əlaqə
+                saxlaya bilərsiniz.
+
+            </p>
+
+
+            <a
+                class="email-link"
+                href="mailto:adadeveloper2025@gmail.com">
+
+                <i class="fa-solid fa-envelope"></i>
+
+                adadeveloper2025@gmail.com
+
+            </a>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             LAST UPDATE
+        ====================================================== -->
+
+        <div class="last-update">
+
+            <i class="fa-regular fa-calendar"></i>
+
+            Son yenilənmə: Sentyabr 2026
+
+        </div>
+
+
+    </main>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script>
+
+
+        /* =========================================================
+           ELEMENTS
+        ========================================================== */
+
+        const sidebar =
+            document.getElementById('sidebar');
+
+        const sidebarOverlay =
+            document.getElementById('sidebarOverlay');
+
+        const menuToggleBtn =
+            document.getElementById('menuToggleBtn');
+
+        const closeSidebarBtn =
+            document.getElementById('closeSidebarBtn');
+
+        const newChatBtn =
+            document.getElementById('newChatBtn');
+
+        const themeToggleBtn =
+            document.getElementById('themeToggleBtn');
+
+        const themeIcon =
+            document.getElementById('themeIcon');
+
+        const themeText =
+            document.getElementById('themeText');
+
+
+        /* =========================================================
+           OPEN SIDEBAR
+        ========================================================== */
+
+        function openSidebar() {
+
+            if (sidebar) {
+
+                sidebar.classList.add('open');
+
+                sidebar.classList.add('active');
+            }
+
+
+            if (sidebarOverlay) {
+
+                sidebarOverlay.classList.add('active');
+            }
+
+
+            if (window.innerWidth <= 768) {
+
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+
+        /* =========================================================
+           CLOSE SIDEBAR
+        ========================================================== */
+
+        function closeSidebar() {
+
+            if (sidebar) {
+
+                sidebar.classList.remove('open');
+
+                sidebar.classList.remove('active');
+            }
+
+
+            if (sidebarOverlay) {
+
+                sidebarOverlay.classList.remove('active');
+            }
+
+
+            document.body.style.overflow = '';
+        }
+
+
+        /* =========================================================
+           TOGGLE SIDEBAR
+        ========================================================== */
+
+        function toggleSidebar() {
+
+            if (!sidebar) return;
+
+
+            const isOpen =
+                sidebar.classList.contains('open') ||
+                sidebar.classList.contains('active');
+
+
+            if (isOpen) {
+
+                closeSidebar();
+
+            } else {
+
+                openSidebar();
+            }
+        }
+
+
+        /* =========================================================
+           MOBILE MENU
+        ========================================================== */
+
+        if (menuToggleBtn) {
+
+            menuToggleBtn.addEventListener(
+                'click',
+                function(event) {
+
+                    event.stopPropagation();
+
+                    toggleSidebar();
+                }
+            );
+        }
+
+
+        /* =========================================================
+           CLOSE BUTTON
+        ========================================================== */
+
+        if (closeSidebarBtn) {
+
+            closeSidebarBtn.addEventListener(
+                'click',
+                closeSidebar
+            );
+        }
+
+
+        /* =========================================================
+           OVERLAY
+        ========================================================== */
+
+        if (sidebarOverlay) {
+
+            sidebarOverlay.addEventListener(
+                'click',
+                closeSidebar
+            );
+        }
+
+
+        /* =========================================================
+           SIDEBAR LINKS
+        ========================================================== */
+
+        if (sidebar) {
+
+            const sidebarLinks =
+                sidebar.querySelectorAll('a');
+
+
+            sidebarLinks.forEach(function(link) {
+
+                link.addEventListener(
+                    'click',
+                    function() {
+
+                        if (window.innerWidth <= 768) {
+
+                            closeSidebar();
+                        }
+                    }
+                );
+            });
+        }
+
+
+        /* =========================================================
+           ESCAPE
+        ========================================================== */
+
+        document.addEventListener(
+            'keydown',
+            function(event) {
+
+                if (event.key === 'Escape') {
+
+                    closeSidebar();
+                }
+            }
+        );
+
+
+        /* =========================================================
+           NEW CHAT
+        ========================================================== */
+
+        if (newChatBtn) {
+
+            newChatBtn.addEventListener(
+                'click',
+                function() {
+
+                    window.location.href = '/';
+                }
+            );
+        }
+
+
+        /* =========================================================
+           THEME
+        ========================================================== */
+
+        function applyTheme(theme) {
+
+            if (theme === 'light') {
+
+                document.body.classList.add(
+                    'light-mode'
+                );
+
+            } else {
+
+                document.body.classList.remove(
+                    'light-mode'
+                );
+            }
+
+
+            updateThemeButton();
+        }
+
+
+        /* =========================================================
+           UPDATE THEME BUTTON
+        ========================================================== */
+
+        function updateThemeButton() {
+
+            if (!themeToggleBtn) return;
+
+
+            const isLight =
+                document.body.classList.contains(
+                    'light-mode'
+                );
+
+
+            if (isLight) {
+
+                themeIcon.className =
+                    'fa-solid fa-moon';
+
+                themeText.textContent =
+                    'Qaranlıq rejimə keç';
+
+            } else {
+
+                themeIcon.className =
+                    'fa-solid fa-sun';
+
+                themeText.textContent =
+                    'Açıq rejimə keç';
+            }
+        }
+
+
+        /* =========================================================
+           LOAD THEME
+        ========================================================== */
+
+        function loadTheme() {
+
+            const savedTheme =
+                localStorage.getItem('theme');
+
+
+            if (savedTheme === 'light') {
+
+                applyTheme('light');
+
+            } else {
+
+                applyTheme('dark');
+            }
+        }
+
+
+        /* =========================================================
+           THEME BUTTON
+        ========================================================== */
+
+        if (themeToggleBtn) {
+
+            themeToggleBtn.addEventListener(
+                'click',
+                function() {
+
+                    const isCurrentlyLight =
+                        document.body.classList.contains(
+                            'light-mode'
+                        );
+
+
+                    const newTheme =
+                        isCurrentlyLight
+                            ? 'dark'
+                            : 'light';
+
+
+                    localStorage.setItem(
+                        'theme',
+                        newTheme
+                    );
+
+
+                    applyTheme(newTheme);
+                }
+            );
+        }
+
+
+        /* =========================================================
+           INITIAL THEME
+        ========================================================== */
+
+        loadTheme();
+
+
+        /* =========================================================
+           STORAGE SYNC
+        ========================================================== */
+
+        window.addEventListener(
+            'storage',
+            function(event) {
+
+                if (event.key === 'theme') {
+
+                    const newTheme =
+                        event.newValue === 'light'
+                            ? 'light'
+                            : 'dark';
+
+
+                    applyTheme(newTheme);
+                }
+            }
+        );
+
+
+        /* =========================================================
+           PAGE SHOW
+        ========================================================== */
+
+        window.addEventListener(
+            'pageshow',
+            function() {
+
+                loadTheme();
+            }
+        );
+
+
+        /* =========================================================
+           WINDOW FOCUS
+        ========================================================== */
+
+        window.addEventListener(
+            'focus',
+            function() {
+
+                loadTheme();
+            }
+        );
+
+
+        /* =========================================================
+           RESIZE
+        ========================================================== */
+
+        window.addEventListener(
+            'resize',
+            function() {
+
+                if (window.innerWidth > 768) {
+
+                    closeSidebar();
+                }
+            }
+        );
+
+
+        /* =========================================================
+           LANGUAGE SYSTEM
+        ========================================================== */
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+
+                try {
+
+                    if (
+                        typeof applyAutoTranslation ===
+                        'function'
+                    ) {
+
+                        applyAutoTranslation();
+                    }
+
+                } catch (error) {
+
+                    console.warn(
+                        'Dil sistemi tətbiq edilərkən xəta:',
+                        error
+                    );
+                }
+            }
+        );
+
+
+    </script>
+
+
+</body>
+</html>

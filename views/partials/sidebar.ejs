@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADA Student AI - Sol Panel</title>
+    <!-- FontAwesome İkonları üçün -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Sidebar Əsas Konteyner */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background-color: #0f172a; /* Qaranlıq tema fonu */
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            border-right: 1px solid #1e293b;
+            font-family: sans-serif;
+        }
+
+        /* Sidebar Başlığı və Logo */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 16px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.5px;
+        }
+
+        .close-sidebar-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+            display: none; /* Desktopda gizli, mobildə görünəcək */
+        }
+
+        /* Yeni Söhbət Düyməsi Bloku */
+        .sidebar-action-area {
+            padding: 16px;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Söhbət Tarixçəsi Siyahısı */
+        .sidebar-history-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Tarixçə Elementləri */
+        .history-item {
+            padding: 10px 12px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .history-item:hover {
+            background-color: #1e293b;
+            color: #fff;
+        }
+
+        .history-item.active {
+            background-color: #1e293b;
+            color: #60a5fa;
+            font-weight: 500;
+        }
+
+        /* Sidebar Aşağı Hissəsi (Ayarlar) */
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid #1e293b;
+        }
+
+        .settings-dropdown-wrapper {
+            position: relative;
+        }
+
+        .settings-toggle-btn {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .settings-toggle-btn:hover {
+            background-color: #1e293b;
+            color: #fff;
+        }
+
+        /* Ayarlar Menyu Paneli */
+        .settings-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .settings-menu.active {
+            display: block;
+        }
+
+        .settings-item {
+            padding: 12px 14px;
+            font-size: 13.5px;
+            color: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .settings-item:hover {
+            background-color: #334155;
+        }
+
+        /* Mobil Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Açıq Mod Stil Uyğunluğu */
+        body.light-mode {
+            background-color: #f8fafc !important;
+        }
+        body.light-mode .sidebar {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-right: 1px solid #e2e8f0;
+        }
+        body.light-mode .sidebar-header,
+        body.light-mode .sidebar-footer {
+            border-color: #e2e8f0;
+        }
+        body.light-mode .history-item {
+            color: #475569;
+        }
+        body.light-mode .history-item:hover {
+            background-color: #f1f5f9;
+            color: #000;
+        }
+        body.light-mode .settings-toggle-btn {
+            color: #475569;
+        }
+        body.light-mode .settings-toggle-btn:hover {
+            background-color: #f1f5f9;
+            color: #000;
+        }
+        body.light-mode .settings-menu {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        body.light-mode .settings-item {
+            color: #0f172a;
+        }
+        body.light-mode .settings-item:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Responsive (Mobil Ekranlar üçün) */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .close-sidebar-btn {
+                display: block;
+            }
+        }
+        /* Dil menyusunun səliqəli düzülüşü üçün əlavə/dəqiq стыллер */
+    .language-dropdown {
+        position: relative;
+        width: 100%;
+    }
+    .language-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .arrow-icon {
+        font-size: 11px;
+        transition: transform 0.2s;
+    }
+    .language-menu {
+        display: none;
+        flex-direction: column;
+        padding-left: 15px;
+        margin-top: 4px;
+        margin-bottom: 4px;
+        gap: 4px;
+    }
+    .language-dropdown.active .language-menu {
+        display: flex;
+    }
+    .language-dropdown.active .arrow-icon {
+        transform: rotate(180deg);
+    }
+    .lang-option {
+        background: transparent;
+        border: none;
+        color: inherit;
+        padding: 8px 10px;
+        font-size: 13px;
+        text-align: left;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+    .lang-option:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    body.light-mode .lang-option:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+        
+    </style>
+</head>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sol Menyu (Sidebar) -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-area">
+            <img src="/ada-logo.jpeg" alt="Logo" class="sidebar-logo">
+            <h2 class="sidebar-title">ADA Student Aİ</h2>
+        </div>
+        <button class="close-sidebar-btn" id="closeSidebarBtn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    
+    <div class="sidebar-action-area">
+        <button class="new-chat-btn" id="newChatBtn">
+            <i class="fa-solid fa-plus"></i>
+            <span>Yeni Söhbət</span>
+        </button>
+    </div>
+
+    <div class="sidebar-history-container" id="chatHistoryList"></div>
+
+    <div class="sidebar-footer">
+        <!-- Ayarlar (Settings) Açılır Menyu Bölməsi -->
+        <div class="settings-dropdown-wrapper" id="settingsContainer">
+            <button class="settings-toggle-btn" id="settingsToggleBtn">
+                <i class="fa-solid fa-gear"></i>
+                <span>Parametrlər</span>
+            </button>
+            
+            <div class="settings-menu" id="settingsMenu">
+                <button type="button" class="settings-item" id="themeToggleItem">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>Qaranlıq / Açıq Mod</span>
+                </button>
+
+                <!-- DİL SEÇİMİ (Şəkildəki kimi səliqəli dropdown) -->
+                  <a href="/chat" class="settings-item">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span data-i18n="daily_limit">chat</span>
+                </a>
+
+                <a href="/limit" class="settings-item">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span data-i18n="daily_limit">Günlük İstifadə Limiti</span>
+                </a>
+                <a href="/ada-pro" class="settings-item">
+                    <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i>
+                    <span>ADA Pro Səhifəsi</span>
+                </a>
+                <a href="/help" class="settings-item">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span data-i18n="help">Yardım (Help)</span>
+                </a>
+                <a href="/gizlilik" class="settings-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span data-i18n="privacy">Gizlilik (Privacy)</span>
+                </a>
+                <a href="#" class="settings-item">
+                    <i class="fa-solid fa-message"></i>
+                    <span data-i18n="feedback">Geri Bildirim</span>
+                </a>
+            </div>
+        </div>
+
+        <% if (locals.user) { %>
+            <div class="user-profile" style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="user-avatar" style="width: 35px; height: 35px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <% if (user.picture || user.profile_picture) { %>
+                            <img src="<%= user.picture || user.profile_picture %>" alt="Profil" style="width: 100%; height: 100%; object-fit: cover;">
+                        <% } else { %>
+                            <i class="fa-solid fa-user"></i>
+                        <% } %>
+                    </div>
+                    <div class="user-info" style="display: flex; flex-direction: column;">
+                        <span class="user-name" style="font-size: 13px; font-weight: 600;"><%= user.name || user.fullname %></span>
+                        <span class="user-email" style="font-size: 11px; color: #94a3b8;"><%= user.email %></span>
+                    </div>
+                </div>
+                <a href="/logout" class="action-btn" title="Hesabdan çıx" style="color: #ef4444; font-size: 16px;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            </div>
+        <% } else { %>
+            <a href="/register" class="register-link-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; background-color: transparent; border: 1px solid #334155; color: #60a5fa; text-decoration: none; font-size: 14px; padding: 10px; border-radius: 8px; margin-top: 10px; transition: background 0.2s;">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Daxil ol / Qeydiyyat</span>
+            </a>
+        <% } %>
+    </div>
+</div>
+    <!-- JavaScript Məntiqi -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        
+        const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const themeToggleItem = document.getElementById('themeToggleItem');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const chatHistoryList = document.getElementById('chatHistoryList');
+
+        // Sidebar açma/bağlama funksiyası
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Ayarlar menyusunu aç/bağla
+        settingsToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', () => {
+            settingsMenu.classList.remove('active');
+        });
+
+        // Tema (Dark/Light) dəyişdirmə məntiqi
+        const currentTheme = localStorage.getItem("theme");
+        if (currentTheme === "light") {
+            document.body.classList.add("light-mode");
+            if(themeToggleItem) themeToggleItem.innerHTML = '<i class="fa-solid fa-sun"></i><span>Qaranlıq / Açıq Mod</span>';
+        }
+
+        themeToggleItem.addEventListener("click", (e) => {
+            e.preventDefault();
+            document.body.classList.toggle("light-mode");
+            
+            let theme = "dark";
+            if (document.body.classList.contains("light-mode")) {
+                theme = "light";
+                themeToggleItem.innerHTML = '<i class="fa-solid fa-sun"></i><span>Qaranlıq / Açıq Mod</span>';
+            } else {
+                themeToggleItem.innerHTML = '<i class="fa-solid fa-moon"></i><span>Qaranlıq / Açıq Mod</span>';
+            }
+            localStorage.setItem("theme", theme);
+        });
+
+        // Yeni söhbət düyməsinin nümunə klik hadisəsi
+        newChatBtn.addEventListener('click', () => {
+            alert("Yeni söhbət yaradıldı!");
+        });
+
+
+        // Dil menyusunun açılıb-bağlanması üçün kiçik skript əlavəsi
+    const langToggleBtn = document.getElementById('langToggleBtn');
+    const languageDropdown = document.getElementById('languageDropdown');
+
+    if (langToggleBtn && languageDropdown) {
+        langToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            languageDropdown.classList.toggle('active');
+        });
+    }
+    </script>
+</body>
+</html>

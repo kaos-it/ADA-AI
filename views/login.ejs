@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daxil ol - ADA AI</title>
+    <!-- FontAwesome ikonlar və Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
+     <script src="/js/language.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+html {
+            background-color: #0e141f; /* Brauzer elastik sürükləndikdə (bounce effect) ağ boşluq görünməsin */
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh; /* Mobil brauzerlərin dinamik ekran hündürlüyü üçün */
+            background: 
+                radial-gradient(circle at 85% 10%, rgba(34, 211, 238, 0.13), transparent 28%),
+                radial-gradient(circle at 50% 80%, rgba(109, 93, 252, 0.18), transparent 50%),
+                linear-gradient(135deg, #121928, #0e141f);
+            background-attachment: fixed;
+            background-size: cover;
+            background-color: #0e141f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            color: #f8fafc;
+            padding: 16px;
+            /* Mobil cihazların təhlükəsiz zonalarını (notches) nəzərə almaq üçün: */
+            padding-top: max(16px, env(safe-area-inset-top));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+        }
+
+        .login-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 32px 28px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-icon {
+            width: 85px; 
+            height: 85px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .brand-header p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* Xəta mesajı */
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            text-align: center;
+        }
+
+        /* Google Giriş Düyməsi (.social-btn) */
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            background-color: #ffffff;
+            color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .social-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .social-btn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .social-btn span {
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            margin: 20px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #334155;
+        }
+
+        .divider::before {
+            margin-right: 10px;
+        }
+
+        .divider::after {
+            margin-left: 10px;
+        }
+
+        /* Form Elementləri */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #38bdf8;
+        }
+
+        /* Əlavə seçimlər (Şifrəni unutdum) */
+        .extra-options {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .extra-options a {
+            color: #38bdf8;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .extra-options a:hover {
+            text-decoration: underline;
+        }
+
+        /* Submit Düyməsi */
+        .submit-btn {
+            width: 100%;
+            background-color: #3b82f6;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Keçid mətni */
+        .switch-text {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .switch-text a {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .switch-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <div class="logo-icon">
+                <img src="/ada-logo.jpeg" alt="Logo">
+            </div>
+            <h1>ADA STUDENT Aİ</h1>
+      <br>Dərslərinizdə biz də kömək edək (ADA AI)</p>
+        </div>
+
+        <% if (errorMessage) { %>
+            <div class="error-message"><%= errorMessage %></div>
+        <% } %>
+
+        <a href="/auth/google" class="social-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+            <span>Google ilə davam et</span>
+        </a>
+
+        <div class="divider">və ya e-poçt ilə</div>
+
+        <!-- E-poçt və Şifrə ilə Giriş Formu -->
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="email">E-poçt ünvanı</label>
+                <input type="email" id="email" name="email" placeholder="nümunə@gmail.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Şifrə</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <div class="extra-options">
+                <a href="/reset-password">Şifrəni unutmusunuz?</a>
+            </div>
+
+            <button type="submit" class="submit-btn">Daxil ol</button>
+        </form>
+
+        <div class="switch-text">
+            Hesabınız yoxdur? <a href="/register">Qeydiyyatdan keçin</a>
+        </div>
+    </div>
+
+</body>
+</html>

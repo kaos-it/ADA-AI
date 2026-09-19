@@ -1,0 +1,2257 @@
+```html
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title data-lang="pro_page_title">ADA Pro - ADA Student AI</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Markdown Parser & DOMPurify (XSS Təhlükəsizliyi üçün) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="/js/language.js"></script>
+    
+    
+  <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
+
+
+    <style>
+
+        /* =========================================================
+           ROOT
+        ========================================================= */
+
+        :root {
+            --bg: #0b1120;
+            --bg-secondary: #111827;
+            --sidebar: #0f172a;
+            --card: rgba(17, 24, 39, 0.78);
+
+            --border: rgba(148, 163, 184, 0.14);
+            --border-hover: rgba(245, 158, 11, 0.55);
+
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --primary-light: #fbbf24;
+
+            --success: #22c55e;
+            --danger: #ef4444;
+
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+
+            --sidebar-width: 270px;
+        }
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 75% 10%,
+                    rgba(245, 158, 11, 0.08),
+                    transparent 30%
+                ),
+                var(--bg);
+
+            color: var(--text);
+
+            font-family:
+                "Segoe UI",
+                Tahoma,
+                Geneva,
+                Verdana,
+                sans-serif;
+
+            overflow-x: hidden;
+        }
+
+        button,
+        a {
+            font-family: inherit;
+        }
+
+        /* =========================================================
+           LIGHT MODE
+        ========================================================= */
+
+        body.light-mode {
+            --bg: #f5f7fb;
+            --bg-secondary: #ffffff;
+            --sidebar: #ffffff;
+            --card: #ffffff;
+
+            --border: rgba(15, 23, 42, 0.09);
+            --border-hover: rgba(217, 119, 6, 0.4);
+
+            --text: #111827;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+
+            background:
+                radial-gradient(
+                    circle at 75% 10%,
+                    rgba(245, 158, 11, 0.08),
+                    transparent 30%
+                ),
+                #f5f7fb;
+        }
+
+        body.light-mode .sidebar {
+            box-shadow: 8px 0 30px rgba(15, 23, 42, 0.05);
+        }
+
+        body.light-mode .mobile-header {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: #e5e7eb;
+        }
+
+        body.light-mode .feature-card,
+        body.light-mode .pricing-card {
+            background: rgba(255, 255, 255, 0.94);
+        }
+
+        body.light-mode .user-profile {
+            background: #f8fafc;
+        }
+
+        body.light-mode .modal-content {
+            background: #ffffff;
+        }
+
+        body.light-mode .pro-description {
+            color: #4b5563;
+        }
+
+        /* =========================================================
+           MOBILE HEADER
+        ========================================================= */
+
+        .mobile-header {
+            display: none;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+
+            height: 64px;
+
+            align-items: center;
+
+            padding: 0 18px;
+
+            background: rgba(15, 23, 42, 0.94);
+
+            backdrop-filter: blur(18px);
+
+            border-bottom: 1px solid var(--border);
+
+            z-index: 1000;
+        }
+
+        .menu-toggle-btn {
+            width: 40px;
+            height: 40px;
+
+            border: 0;
+            border-radius: 10px;
+
+            background: transparent;
+            color: var(--text);
+
+            font-size: 19px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            background: rgba(148, 163, 184, 0.1);
+        }
+
+        .mobile-header-brand {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            margin-left: 8px;
+
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .mobile-header-brand img {
+            width: 32px;
+            height: 32px;
+
+            border-radius: 9px;
+
+            object-fit: cover;
+        }
+
+        /* =========================================================
+           SIDEBAR OVERLAY
+        ========================================================= */
+
+        .sidebar-overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.58);
+
+            backdrop-filter: blur(4px);
+
+            z-index: 999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* =========================================================
+           SIDEBAR
+        ========================================================= */
+
+        .sidebar {
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: var(--sidebar-width);
+            height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(15, 23, 42, 0.98),
+                    rgba(11, 17, 32, 0.99)
+                );
+
+            border-right: 1px solid var(--border);
+
+            z-index: 1001;
+
+            transition:
+                transform 0.3s cubic-bezier(.4,0,.2,1);
+
+            overflow-y: auto;
+        }
+
+        /* =========================================================
+           BRAND
+        ========================================================= */
+
+        .brand {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 22px 20px;
+
+            font-size: 16px;
+            font-weight: 800;
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 11px;
+
+            object-fit: cover;
+
+            box-shadow:
+                0 5px 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .brand-subtitle {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* =========================================================
+           SIDEBAR NAVIGATION
+        ========================================================= */
+
+        .sidebar-nav {
+            padding: 20px 13px;
+        }
+
+        .sidebar-section-title {
+            padding: 0 10px 10px;
+
+            font-size: 10px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1.2px;
+
+            color: var(--text-muted);
+
+            font-weight: 700;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            width: 100%;
+
+            padding: 11px 12px;
+
+            margin-bottom: 5px;
+
+            border-radius: 11px;
+
+            color: var(--text-secondary);
+
+            text-decoration: none;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            transition: 0.2s;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+
+            text-align: center;
+
+            font-size: 15px;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(148, 163, 184, 0.08);
+            color: var(--text);
+            transform: translateX(2px);
+        }
+
+        .sidebar-link.active {
+            color: #fff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(245, 158, 11, 0.18),
+                    rgba(217, 119, 6, 0.08)
+                );
+
+            border: 1px solid rgba(245, 158, 11, 0.18);
+        }
+
+        .sidebar-link.active i {
+            color: var(--primary-light);
+        }
+
+        /* =========================================================
+           SIDEBAR FOOTER
+        ========================================================= */
+
+        .sidebar-footer {
+            margin-top: auto;
+
+            padding: 15px;
+
+            border-top: 1px solid var(--border);
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        .btn-chat-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            padding: 11px;
+
+            border-radius: 11px;
+
+            background: rgba(148, 163, 184, 0.06);
+
+            border: 1px solid var(--border);
+
+            color: var(--text);
+
+            text-decoration: none;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            transition: 0.2s;
+        }
+
+        .btn-chat-page:hover {
+            border-color: rgba(245, 158, 11, 0.3);
+
+            background: rgba(245, 158, 11, 0.08);
+
+            transform: translateY(-1px);
+        }
+
+        /* =========================================================
+           USER PROFILE
+        ========================================================= */
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            padding: 9px;
+
+            background: rgba(0, 0, 0, 0.18);
+
+            border: 1px solid var(--border);
+
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            overflow: hidden;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #334155;
+
+            color: #cbd5e1;
+
+            flex-shrink: 0;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+        }
+
+        .user-info {
+            min-width: 0;
+
+            flex: 1;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 2px;
+        }
+
+        .user-name {
+            color: var(--text);
+
+            font-size: 12px;
+            font-weight: 700;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-email {
+            color: var(--text-muted);
+
+            font-size: 10px;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-btn {
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: var(--text-muted);
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* =========================================================
+           MAIN
+        ========================================================= */
+
+        .main-content {
+            width: calc(100% - var(--sidebar-width));
+
+            margin-left: var(--sidebar-width);
+
+            min-height: 100vh;
+
+            padding: 55px 45px 70px;
+
+            position: relative;
+        }
+
+        /* Decorative background */
+
+        .main-content::before {
+            content: "";
+
+            position: absolute;
+
+            width: 500px;
+            height: 500px;
+
+            right: -220px;
+            top: -200px;
+
+            background: rgba(245, 158, 11, 0.07);
+
+            filter: blur(100px);
+
+            border-radius: 50%;
+
+            pointer-events: none;
+        }
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .pro-header {
+            max-width: 850px;
+
+            margin: 0 auto 42px;
+
+            text-align: center;
+
+            position: relative;
+
+            z-index: 1;
+        }
+
+        .badge-pro {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 7px 14px;
+
+            margin-bottom: 18px;
+
+            border-radius: 30px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(245, 158, 11, 0.18),
+                    rgba(217, 119, 6, 0.08)
+                );
+
+            border: 1px solid rgba(245, 158, 11, 0.28);
+
+            color: var(--primary-light);
+
+            font-size: 11px;
+
+            font-weight: 800;
+
+            letter-spacing: 0.8px;
+
+            text-transform: uppercase;
+        }
+
+        .badge-pro i {
+            font-size: 11px;
+        }
+
+        .pro-header h1 {
+            max-width: 760px;
+
+            margin: 0 auto 16px;
+
+            font-size: clamp(2rem, 4vw, 3.15rem);
+
+            line-height: 1.1;
+
+            letter-spacing: -1.3px;
+
+            font-weight: 850;
+        }
+
+        .pro-title-gradient {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff,
+                    #fbbf24
+                );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-mode .pro-title-gradient {
+            background:
+                linear-gradient(
+                    135deg,
+                    #111827,
+                    #d97706
+                );
+
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .pro-description {
+            max-width: 690px;
+
+            margin: 0 auto;
+
+            color: var(--text-secondary);
+
+            font-size: 15px;
+
+            line-height: 1.75;
+        }
+
+        /* =========================================================
+           PRICING
+        ========================================================= */
+
+        .pricing-card {
+            position: relative;
+
+            max-width: 480px;
+
+            margin: 0 auto 48px;
+
+            padding: 32px;
+
+            text-align: center;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(30, 41, 59, 0.96),
+                    rgba(15, 23, 42, 0.98)
+                );
+
+            border: 1px solid rgba(245, 158, 11, 0.5);
+
+            box-shadow:
+                0 20px 60px rgba(245, 158, 11, 0.09);
+
+            overflow: hidden;
+
+            z-index: 1;
+        }
+
+        .pricing-card::before {
+            content: "";
+
+            position: absolute;
+
+            width: 170px;
+            height: 170px;
+
+            top: -100px;
+            right: -80px;
+
+            background: rgba(245, 158, 11, 0.12);
+
+            border-radius: 50%;
+
+            filter: blur(25px);
+        }
+
+        .pricing-top {
+            position: relative;
+            z-index: 2;
+        }
+
+        .popular-label {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            margin-bottom: 14px;
+
+            padding: 5px 10px;
+
+            border-radius: 20px;
+
+            background: rgba(245, 158, 11, 0.12);
+
+            color: var(--primary-light);
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+        }
+
+        .price-title {
+            font-size: 16px;
+
+            font-weight: 700;
+
+            color: var(--text);
+        }
+
+        .price-value {
+            margin: 8px 0 20px;
+
+            color: var(--primary-light);
+
+            font-size: 44px;
+
+            line-height: 1;
+
+            font-weight: 850;
+
+            letter-spacing: -1px;
+        }
+
+        .price-value span {
+            color: var(--text-muted);
+
+            font-size: 14px;
+
+            font-weight: 500;
+
+            letter-spacing: 0;
+        }
+
+        .btn-upgrade {
+            position: relative;
+            z-index: 2;
+
+            width: 100%;
+
+            border: 0;
+
+            padding: 14px 20px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f59e0b,
+                    #d97706
+                );
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            box-shadow:
+                0 10px 25px rgba(245, 158, 11, 0.2);
+
+            transition: 0.25s;
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 14px 32px rgba(245, 158, 11, 0.28);
+        }
+
+        .btn-upgrade:active {
+            transform: translateY(0);
+        }
+
+        .guarantee-text {
+            position: relative;
+
+            margin-top: 14px;
+
+            color: var(--text-muted);
+
+            font-size: 11px;
+        }
+
+        /* =========================================================
+           FEATURES
+        ========================================================= */
+
+        .section-heading {
+            max-width: 1000px;
+
+            margin: 0 auto 18px;
+
+            color: var(--text-muted);
+
+            font-size: 11px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+        .features-grid {
+            max-width: 1000px;
+
+            margin: 0 auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 16px;
+        }
+
+        .feature-card {
+            position: relative;
+
+            padding: 24px;
+
+            min-height: 185px;
+
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(30, 41, 59, 0.82),
+                    rgba(15, 23, 42, 0.82)
+                );
+
+            border: 1px solid var(--border);
+
+            cursor: pointer;
+
+            overflow: hidden;
+
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .feature-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 120px;
+            height: 120px;
+
+            right: -70px;
+            bottom: -70px;
+
+            background: rgba(245, 158, 11, 0.08);
+
+            border-radius: 50%;
+
+            filter: blur(15px);
+
+            transition: 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+
+            border-color: var(--border-hover);
+
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card:hover::after {
+            transform: scale(1.4);
+        }
+
+        .feature-icon {
+            width: 46px;
+            height: 46px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 18px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(245, 158, 11, 0.1);
+
+            border:
+                1px solid rgba(245, 158, 11, 0.14);
+
+            color: var(--primary-light);
+
+            font-size: 18px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 9px;
+
+            color: var(--text);
+
+            font-size: 15px;
+
+            font-weight: 750;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+
+            font-size: 12px;
+
+            line-height: 1.65;
+        }
+
+        .feature-arrow {
+            position: absolute;
+
+            right: 20px;
+            top: 22px;
+
+            color: var(--text-muted);
+
+            font-size: 12px;
+
+            transition: 0.2s;
+        }
+
+        .feature-card:hover .feature-arrow {
+            color: var(--primary-light);
+
+            transform: translateX(3px);
+        }
+
+        /* =========================================================
+           MODAL
+        ========================================================= */
+
+        .modal-overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            padding: 20px;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                rgba(2, 6, 23, 0.75);
+
+            backdrop-filter: blur(8px);
+
+            z-index: 3000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 480px;
+
+            padding: 32px;
+
+            border-radius: 22px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #1e293b,
+                    #0f172a
+                );
+
+            border: 1px solid var(--border);
+
+            box-shadow:
+                0 30px 80px rgba(0,0,0,0.4);
+
+            text-align: center;
+
+            position: relative;
+
+            animation:
+                modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+
+            top: 14px;
+            right: 14px;
+
+            width: 34px;
+            height: 34px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: rgba(148, 163, 184, 0.08);
+
+            color: var(--text-secondary);
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+
+            background: rgba(239, 68, 68, 0.14);
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+
+            margin: 0 auto 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 17px;
+
+            background: rgba(245, 158, 11, 0.1);
+
+            color: var(--primary-light);
+
+            font-size: 25px;
+        }
+
+        .modal-title {
+            margin-bottom: 10px;
+
+            font-size: 21px;
+
+            color: var(--text);
+        }
+
+        .modal-description {
+            margin-bottom: 22px;
+
+            color: var(--text-secondary);
+
+            font-size: 13px;
+
+            line-height: 1.7;
+        }
+
+        .modal-wiki-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            width: 100%;
+
+            padding: 12px;
+
+            border-radius: 11px;
+
+            background: rgba(148, 163, 184, 0.07);
+
+            border: 1px solid var(--border);
+
+            color: var(--text);
+
+            text-decoration: none;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            transition: 0.2s;
+        }
+
+        .modal-wiki-btn:hover {
+            border-color: rgba(245, 158, 11, 0.35);
+
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media (max-width: 1000px) {
+
+            :root {
+                --sidebar-width: 245px;
+            }
+
+            .main-content {
+                padding-left: 28px;
+                padding-right: 28px;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .mobile-header {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                width: 100%;
+
+                margin-left: 0;
+
+                padding:
+                    94px
+                    17px
+                    50px;
+            }
+
+            .pro-header {
+                margin-bottom: 32px;
+            }
+
+            .pro-header h1 {
+                font-size: 2rem;
+
+                letter-spacing: -0.8px;
+            }
+
+            .pro-description {
+                font-size: 13px;
+            }
+
+            .pricing-card {
+                padding: 25px 20px;
+
+                margin-bottom: 35px;
+            }
+
+            .price-value {
+                font-size: 38px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+
+                gap: 12px;
+            }
+
+            .feature-card {
+                min-height: auto;
+
+                padding: 20px;
+            }
+
+            .modal-content {
+                padding: 26px 20px;
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .main-content {
+                padding-left: 13px;
+                padding-right: 13px;
+            }
+
+            .pro-header h1 {
+                font-size: 1.72rem;
+            }
+
+            .badge-pro {
+                font-size: 10px;
+            }
+
+            .pricing-card {
+                border-radius: 19px;
+            }
+
+            .feature-card {
+                border-radius: 15px;
+            }
+        }
+
+        /* =========================================================
+           REDUCED MOTION
+        ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+
+                transition: none !important;
+
+                animation: none !important;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     MOBILE HEADER
+========================================================= -->
+
+<header class="mobile-header">
+
+    <button
+        class="menu-toggle-btn"
+        id="menuToggleBtn"
+        onclick="toggleSidebar()"
+        aria-label="Menyunu aç">
+
+        <i class="fa-solid fa-bars"></i>
+
+    </button>
+
+    <div class="mobile-header-brand">
+
+        <img
+            src="/ada-logo.jpeg"
+            alt="ADA Student AI">
+
+        <span>ADA Student AI</span>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     SIDEBAR OVERLAY
+========================================================= -->
+
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+    onclick="toggleSidebar()">
+</div>
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div>
+
+        <!-- BRAND -->
+
+        <div class="brand">
+
+            <img
+                src="/ada-logo.jpeg"
+                alt="ADA Logo"
+                class="brand-logo">
+
+            <div class="brand-text">
+
+                <span class="brand-title">
+                    ADA Student AI
+                </span>
+
+                <span class="brand-subtitle">
+                    AI Education Platform
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- NAVIGATION -->
+
+        <nav class="sidebar-nav">
+
+            <div class="sidebar-section-title">
+                MENYU
+            </div>
+
+
+            <a
+                href="/"
+                class="sidebar-link">
+
+                <i class="fa-solid fa-comments"></i>
+
+                <span data-lang="sidebar_chat_btn">
+                    AI Çat
+                </span>
+
+            </a>
+
+
+            <a
+                href="/help"
+                class="sidebar-link">
+
+                <i class="fa-solid fa-circle-question"></i>
+
+                <span>
+                    Yardım
+                </span>
+
+            </a>
+
+
+            <a
+                href="/feedback"
+                class="sidebar-link">
+
+                <i class="fa-solid fa-message"></i>
+
+                <span>
+                    Geribildirim
+                </span>
+
+            </a>
+
+
+            <a
+                href="/privacy"
+                class="sidebar-link">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <span>
+                    Gizlilik
+                </span>
+
+            </a>
+
+
+            <a
+                href="/pro"
+                class="sidebar-link active">
+
+                <i class="fa-solid fa-crown"></i>
+
+                <span>
+                    ADA Pro
+                </span>
+
+            </a>
+
+        </nav>
+
+    </div>
+
+
+    <!-- SIDEBAR FOOTER -->
+
+    <div class="sidebar-footer">
+
+        <a
+            href="/"
+            class="btn-chat-page">
+
+            <i class="fa-regular fa-comments"></i>
+
+            <span data-lang="sidebar_chat_btn">
+                Çata Keçid Et
+            </span>
+
+        </a>
+
+
+        <% if (locals.user) { %>
+
+            <div class="user-profile">
+
+                <div class="user-avatar">
+
+                    <% if (user.picture || user.profile_picture) { %>
+
+                        <img
+                            src="<%= user.picture || user.profile_picture %>"
+                            alt="Profil">
+
+                    <% } else { %>
+
+                        <i class="fa-solid fa-user"></i>
+
+                    <% } %>
+
+                </div>
+
+
+                <div class="user-info">
+
+                    <span class="user-name">
+                        <%= user.name || user.fullname %>
+                    </span>
+
+                    <span class="user-email">
+                        <%= user.email %>
+                    </span>
+
+                </div>
+
+
+                <a
+                    href="/logout"
+                    class="action-btn"
+                    title="Hesabdan çıx">
+
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+
+                </a>
+
+            </div>
+
+        <% } else { %>
+
+            <a
+                href="/register"
+                class="btn-chat-page"
+                style="
+                    background:rgba(34,197,94,.08);
+                    color:#4ade80;
+                    border-color:rgba(34,197,94,.18);
+                ">
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+
+                <span data-lang="login_register">
+                    Daxil ol / Qeydiyyat
+                </span>
+
+            </a>
+
+        <% } %>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<main class="main-content">
+
+
+    <!-- HERO -->
+
+    <section class="pro-header">
+
+        <span class="badge-pro">
+
+            <i class="fa-solid fa-bolt"></i>
+
+            <span data-lang="badge_pro">
+                ADA PRO
+            </span>
+
+        </span>
+
+
+        <h1>
+
+            <span class="pro-title-gradient"
+                  data-lang="pro_main_title">
+
+                Təhsildə AI Gücünü Maksimuma Çıxarın
+
+            </span>
+
+        </h1>
+
+
+        <p
+            class="pro-description"
+            data-lang="pro_subtitle">
+
+            ADA Pro ilə tətbiq olunan yüksək dəqiqlikli
+            AI məntiq modeli, sənəd təhlili və akademik
+            dəstəklə imtahanlara daha sürətli hazırlaşın.
+
+        </p>
+
+    </section>
+
+
+    <!-- PRICING -->
+
+    <section class="pricing-card">
+
+        <div class="pricing-top">
+
+            <div class="popular-label">
+
+                <i class="fa-solid fa-star"></i>
+
+                PREMIUM PLAN
+
+            </div>
+
+
+            <div
+                class="price-title"
+                data-lang="pro_card_title">
+
+                ADA Pro Aylıq
+
+            </div>
+
+
+            <div class="price-value">
+
+                ₼9.99
+
+                <span data-lang="pro_price_duration">
+                    / ay
+                </span>
+
+            </div>
+
+
+            <button
+                class="btn-upgrade"
+                onclick="startUpgrade()">
+
+                <i class="fa-solid fa-bolt"></i>
+
+                <span data-lang="pro_subscribe_btn">
+                    ADA Pro-ya Keçid Et
+                </span>
+
+            </button>
+
+
+            <div
+                class="guarantee-text"
+                data-lang="pro_guarantee">
+
+                İstədiyiniz an abunəliyi ləğv edə bilərsiniz.
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FEATURES TITLE -->
+
+    <div class="section-heading">
+
+        ADA PRO İMKANLARI
+
+    </div>
+
+
+    <!-- FEATURES -->
+
+    <section class="features-grid">
+
+
+        <!-- LOGIC -->
+
+        <div
+            class="feature-card"
+            onclick="openModal('logic')">
+
+            <i class="fa-solid fa-chevron-right feature-arrow"></i>
+
+            <div class="feature-icon">
+
+                <i class="fa-solid fa-brain"></i>
+
+            </div>
+
+            <h3 data-lang="feature_logic_title">
+                Dərin Məntiq Modeli
+            </h3>
+
+            <p data-lang="feature_logic_desc">
+
+                Mürəkkəb riyazi tənliklər,
+                məntiq məsələləri və kod xətaları
+                üçün daha ətraflı və mərhələli həllər.
+
+            </p>
+
+        </div>
+
+
+        <!-- PDF -->
+
+        <div
+            class="feature-card"
+            onclick="openModal('pdf')">
+
+            <i class="fa-solid fa-chevron-right feature-arrow"></i>
+
+            <div class="feature-icon">
+
+                <i class="fa-solid fa-file-pdf"></i>
+
+            </div>
+
+            <h3 data-lang="feature_pdf_title">
+                PDF & Sənəd Analizi
+            </h3>
+
+            <p data-lang="feature_pdf_desc">
+
+                Mühazirə və dərs materiallarını
+                analiz edin, konspekt və testlər
+                hazırlamaq üçün istifadə edin.
+
+            </p>
+
+        </div>
+
+
+        <!-- LIMITS -->
+
+        <div
+            class="feature-card"
+            onclick="openModal('limits')">
+
+            <i class="fa-solid fa-chevron-right feature-arrow"></i>
+
+            <div class="feature-icon">
+
+                <i class="fa-solid fa-infinity"></i>
+
+            </div>
+
+            <h3 data-lang="feature_limits_title">
+                Yüksək Limitlər
+            </h3>
+
+            <p data-lang="feature_limits_desc">
+
+                Daha çox sorğu və uzunmüddətli
+                akademik istifadə üçün genişləndirilmiş
+                limitlər.
+
+            </p>
+
+        </div>
+
+
+        <!-- CODE -->
+
+        <div
+            class="feature-card"
+            onclick="openModal('code')">
+
+            <i class="fa-solid fa-chevron-right feature-arrow"></i>
+
+            <div class="feature-icon">
+
+                <i class="fa-solid fa-code"></i>
+
+            </div>
+
+            <h3 data-lang="feature_code_title">
+                Kod Debugger
+            </h3>
+
+            <p data-lang="feature_code_desc">
+
+                Proqramlaşdırma tapşırıqlarında
+                xətaları müəyyənləşdirin və
+                daha optimal həllər əldə edin.
+
+            </p>
+
+        </div>
+
+
+    </section>
+
+</main>
+
+
+<!-- =========================================================
+     MODAL
+========================================================= -->
+
+<div
+    class="modal-overlay"
+    id="infoModal"
+    onclick="closeModalOutside(event)">
+
+    <div
+        class="modal-content"
+        onclick="event.stopPropagation()">
+
+
+        <button
+            class="modal-close"
+            onclick="closeModal()"
+            aria-label="Bağla">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div
+            class="modal-icon"
+            id="modalIcon">
+
+            <i class="fa-solid fa-brain"></i>
+
+        </div>
+
+
+        <h2
+            class="modal-title"
+            id="modalTitle">
+
+            Məlumat Başlığı
+
+        </h2>
+
+
+        <p
+            class="modal-description"
+            id="modalDesc">
+
+            Ətraflı məlumat.
+
+        </p>
+
+
+        <a
+            href="#"
+            target="_blank"
+            class="modal-wiki-btn"
+            id="modalWikiBtn">
+
+            <i class="fa-brands fa-wikipedia-w"></i>
+
+            <span data-lang="wiki_btn_text">
+                Vikipediya Məqaləsinə Keç
+            </span>
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+    /* =========================================================
+       SIDEBAR
+    ========================================================= */
+
+    function toggleSidebar() {
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        const overlay =
+            document.getElementById("sidebarOverlay");
+
+        const button =
+            document.getElementById("menuToggleBtn");
+
+        if (!sidebar || !overlay) return;
+
+        sidebar.classList.toggle("open");
+
+        overlay.classList.toggle("active");
+
+        const isOpen =
+            sidebar.classList.contains("open");
+
+        if (button) {
+
+            button.innerHTML = isOpen
+                ? '<i class="fa-solid fa-xmark"></i>'
+                : '<i class="fa-solid fa-bars"></i>';
+
+        }
+
+    }
+
+
+    function closeSidebar() {
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        const overlay =
+            document.getElementById("sidebarOverlay");
+
+        const button =
+            document.getElementById("menuToggleBtn");
+
+        if (sidebar)
+            sidebar.classList.remove("open");
+
+        if (overlay)
+            overlay.classList.remove("active");
+
+        if (button)
+            button.innerHTML =
+                '<i class="fa-solid fa-bars"></i>';
+
+    }
+
+
+    /* =========================================================
+       FEATURE MODAL
+    ========================================================= */
+
+    const featureData = {
+
+        logic: {
+
+            icon: "fa-solid fa-brain",
+
+            title: "Dərin Məntiq Modeli",
+
+            description:
+                "ADA Pro mürəkkəb akademik sualların, riyazi məsələlərin, məntiq tapşırıqlarının və proqramlaşdırma problemlərinin daha ətraflı izahını almağa kömək edir.",
+
+            wiki:
+                "https://en.wikipedia.org/wiki/Artificial_intelligence"
+
+        },
+
+        pdf: {
+
+            icon: "fa-solid fa-file-pdf",
+
+            title: "PDF & Sənəd Analizi",
+
+            description:
+                "Dərs materialları və sənədlərlə işləyərək vacib məlumatları strukturlaşdırmaq, xülasə hazırlamaq və öyrənmə prosesini sürətləndirmək üçün istifadə edə bilərsiniz.",
+
+            wiki:
+                "https://en.wikipedia.org/wiki/PDF"
+
+        },
+
+        limits: {
+
+            icon: "fa-solid fa-infinity",
+
+            title: "Yüksək Limitlər",
+
+            description:
+                "ADA Pro planı daha geniş istifadə imkanları təqdim etmək üçün nəzərdə tutulur. Faktiki limitlər seçilmiş plan və xidmət şərtlərinə uyğun tətbiq olunur.",
+
+            wiki:
+                "https://en.wikipedia.org/wiki/Rate_limiting"
+
+        },
+
+        code: {
+
+            icon: "fa-solid fa-code",
+
+            title: "Kod Debugger",
+
+            description:
+                "JavaScript, HTML, CSS, Node.js və digər proqramlaşdırma texnologiyalarında kod problemlərini analiz etmək və mümkün həll yollarını araşdırmaq üçün AI dəstəyindən istifadə edə bilərsiniz.",
+
+            wiki:
+                "https://en.wikipedia.org/wiki/Debugging"
+
+        }
+
+    };
+
+
+    function openModal(type) {
+
+        const data =
+            featureData[type];
+
+        if (!data) return;
+
+
+        const modal =
+            document.getElementById("infoModal");
+
+        const icon =
+            document.getElementById("modalIcon");
+
+        const title =
+            document.getElementById("modalTitle");
+
+        const desc =
+            document.getElementById("modalDesc");
+
+        const wiki =
+            document.getElementById("modalWikiBtn");
+
+
+        icon.innerHTML =
+            `<i class="${data.icon}"></i>`;
+
+        title.textContent =
+            data.title;
+
+        desc.textContent =
+            data.description;
+
+        wiki.href =
+            data.wiki;
+
+
+        modal.classList.add("active");
+
+        document.body.style.overflow =
+            "hidden";
+
+    }
+
+
+    function closeModal() {
+
+        const modal =
+            document.getElementById("infoModal");
+
+        if (!modal) return;
+
+        modal.classList.remove("active");
+
+        document.body.style.overflow =
+            "";
+
+    }
+
+
+    function closeModalOutside(event) {
+
+        if (
+            event.target.id === "infoModal"
+        ) {
+
+            closeModal();
+
+        }
+
+    }
+
+
+    /* ESC */
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+
+                closeModal();
+
+                closeSidebar();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       UPGRADE
+    ========================================================= */
+
+    function startUpgrade() {
+
+        /*
+         * Burada gələcəkdə ödəniş sistemi qoşa bilərsən.
+         *
+         * Məsələn:
+         *
+         * window.location.href = "/pro/checkout";
+         *
+         * və ya Stripe / başqa ödəniş sistemi.
+         */
+
+        alert(
+            "ADA Pro abunəliyi üçün ödəniş sistemi hazırlanır."
+        );
+
+    }
+
+
+    /* =========================================================
+       TRANSLATION
+    ========================================================= */
+
+    function applyAutoTranslation(lang) {
+
+        const currentLang =
+            lang ||
+            localStorage.getItem("userLanguage") ||
+            "az";
+
+
+        document
+            .querySelectorAll("[data-lang]")
+            .forEach(function(el) {
+
+                const key =
+                    el.getAttribute("data-lang");
+
+
+                if (
+                    typeof dictionary !== "undefined" &&
+                    dictionary[key]
+                ) {
+
+                    if (
+                        dictionary[key][currentLang]
+                    ) {
+
+                        el.textContent =
+                            dictionary[key][currentLang];
+
+                    }
+
+                    else if (
+                        dictionary[key]["az"]
+                    ) {
+
+                        el.textContent =
+                            dictionary[key]["az"];
+
+                    }
+
+                }
+
+                else if (
+                    typeof translations !== "undefined" &&
+                    translations[currentLang] &&
+                    translations[currentLang][key]
+                ) {
+
+                    el.textContent =
+                        translations[currentLang][key];
+
+                }
+
+            });
+
+    }
+
+
+    function setLanguage(lang) {
+
+        localStorage.setItem(
+            "userLanguage",
+            lang
+        );
+
+        applyAutoTranslation(lang);
+
+    }
+
+
+    /* =========================================================
+       INITIALIZATION
+    ========================================================= */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            const savedLang =
+                localStorage.getItem(
+                    "userLanguage"
+                ) || "az";
+
+            applyAutoTranslation(
+                savedLang
+            );
+
+
+            /* Mobile sidebar link click */
+
+            document
+                .querySelectorAll(".sidebar-link")
+                .forEach(function(link) {
+
+                    link.addEventListener(
+                        "click",
+                        function() {
+
+                            if (
+                                window.innerWidth <= 768
+                            ) {
+
+                                closeSidebar();
+
+                            }
+
+                        }
+                    );
+
+                });
+
+        }
+    );
+
+
+    /* =========================================================
+       LANGUAGE STORAGE SYNC
+    ========================================================= */
+
+    window.addEventListener(
+        "storage",
+        function(event) {
+
+            if (
+                [
+                    "userLanguage",
+                    "app_lang",
+                    "lang",
+                    "language",
+                    "site_language"
+                ].includes(event.key)
+            ) {
+
+                const newLang =
+                    event.newValue || "az";
+
+                applyAutoTranslation(
+                    newLang
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
+```

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
@@ -13,15 +14,14 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- =========================================================
-         DOMPURIFY
+         DOMPURIFY / MARKED
     ========================================================== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <!-- Markdown Parser & DOMPurify (XSS Təhlükəsizliyi üçün) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
     <script src="/js/language.js"></script>
 
-  <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
+    <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
 
     <style>
 
@@ -666,6 +666,42 @@
 
 
         /* =========================================================
+           PRIVACY PAGE WRAPPER
+        ========================================================== */
+
+        .privacy-page-wrapper {
+
+            width: 100%;
+
+            max-width: 1500px;
+
+            margin: 0 auto;
+        }
+
+
+        /* =========================================================
+           TOP AD
+        ========================================================== */
+
+        .privacy-top-ad {
+
+            width: 100%;
+
+            min-height: 90px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin: 0 auto 28px;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
            PAGE HEADER
         ========================================================== */
 
@@ -737,6 +773,53 @@
         .privacy-header h1 i {
 
             color: var(--blue-light);
+        }
+
+
+        /* =========================================================
+           CONTENT + RIGHT AD
+        ========================================================== */
+
+        .privacy-content-layout {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) 300px;
+
+            gap: 28px;
+
+            align-items: start;
+        }
+
+
+        .privacy-content {
+
+            min-width: 0;
+        }
+
+
+        /* =========================================================
+           RIGHT SIDE AD
+        ========================================================== */
+
+        .privacy-side-ad {
+
+            width: 300px;
+
+            min-height: 250px;
+
+            display: flex;
+
+            align-items: flex-start;
+
+            justify-content: center;
+
+            overflow: hidden;
+
+            position: sticky;
+
+            top: 30px;
         }
 
 
@@ -1067,6 +1150,28 @@
 
 
         /* =========================================================
+           BOTTOM AD
+        ========================================================== */
+
+        .privacy-bottom-ad {
+
+            width: 100%;
+
+            min-height: 90px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin: 30px auto 0;
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
            LIGHT MODE
         ========================================================== */
 
@@ -1189,6 +1294,25 @@
 
 
         /* =========================================================
+           TABLET
+        ========================================================== */
+
+        @media (max-width: 1150px) {
+
+            .privacy-content-layout {
+
+                grid-template-columns:
+                    minmax(0, 1fr);
+            }
+
+            .privacy-side-ad {
+
+                display: none;
+            }
+        }
+
+
+        /* =========================================================
            MOBILE
         ========================================================== */
 
@@ -1291,6 +1415,18 @@
                 font-size:
                     14px;
             }
+
+
+            /*
+             * Mobil cihazlarda 728x90 reklamları
+             * istifadəçiyə mane olmaması üçün gizlədirik.
+             */
+
+            .privacy-top-ad,
+            .privacy-bottom-ad {
+
+                display: none;
+            }
         }
 
 
@@ -1387,10 +1523,6 @@
         id="sidebar">
 
 
-        <!-- =====================================================
-             SIDEBAR HEADER
-        ====================================================== -->
-
         <div class="sidebar-header">
 
             <div class="logo-area">
@@ -1448,15 +1580,10 @@
 
         <div class="sidebar-history-container">
 
-
             <div class="sidebar-section-title">
                 Naviqasiya
             </div>
 
-
-            <!-- =================================================
-                 AI CHAT
-            ================================================== -->
 
             <a
                 href="/"
@@ -1471,10 +1598,6 @@
             </a>
 
 
-            <!-- =================================================
-                 HELP
-            ================================================== -->
-
             <a
                 href="/help"
                 class="sidebar-nav-link">
@@ -1487,10 +1610,6 @@
 
             </a>
 
-
-            <!-- =================================================
-                 LIMIT
-            ================================================== -->
 
             <a
                 href="/limit"
@@ -1505,10 +1624,6 @@
             </a>
 
 
-            <!-- =================================================
-                 PRIVACY - ACTIVE
-            ================================================== -->
-
             <a
                 href="/gizlilik"
                 class="sidebar-nav-link active">
@@ -1521,7 +1636,6 @@
 
             </a>
 
-
         </div>
 
 
@@ -1531,13 +1645,7 @@
 
         <div class="sidebar-footer">
 
-
             <div class="sidebar-footer-actions">
-
-
-                <!-- =================================================
-                     THEME
-                ================================================== -->
 
                 <button
                     class="sidebar-footer-btn"
@@ -1556,10 +1664,6 @@
                 </button>
 
 
-                <!-- =================================================
-                     CHAT
-                ================================================== -->
-
                 <a
                     href="/"
                     class="sidebar-footer-btn">
@@ -1571,7 +1675,6 @@
                     </span>
 
                 </a>
-
 
             </div>
 
@@ -1659,608 +1762,688 @@
     <main class="main-content">
 
 
-        <!-- =====================================================
-             PAGE HEADER
-        ====================================================== -->
-
-        <div class="privacy-header">
+        <div class="privacy-page-wrapper">
 
 
-            <button
-                class="menu-toggle-btn"
-                id="menuToggleBtn"
-                type="button"
-                aria-label="Menyunu aç">
+            <!-- =================================================
+                 TOP 728x90 AD
+            ================================================== -->
 
-                <i class="fa-solid fa-bars"></i>
+            <div class="privacy-top-ad">
 
-            </button>
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : 'b4aa0de4c99e09f953836c06fc79b41b',
+                        'format' : 'iframe',
+                        'height' : 90,
+                        'width' : 728,
+                        'params' : {}
+                    };
+                </script>
+
+                <script
+                    type="text/javascript"
+                    src="https://www.highrevenueformat.com/b4aa0de4c99e09f953836c06fc79b41b/invoke.js">
+                </script>
+
+            </div>
 
 
-            <h1>
+            <!-- =================================================
+                 PAGE HEADER
+            ================================================== -->
 
-                <i class="fa-solid fa-shield-halved"></i>
+            <div class="privacy-header">
 
-                Gizlilik Siyasəti
+                <button
+                    class="menu-toggle-btn"
+                    id="menuToggleBtn"
+                    type="button"
+                    aria-label="Menyunu aç">
 
-            </h1>
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+
+                <h1>
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                    Gizlilik Siyasəti
+
+                </h1>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTENT LAYOUT
+            ================================================== -->
+
+            <div class="privacy-content-layout">
+
+
+                <!-- =============================================
+                     PRIVACY CONTENT
+                ============================================== -->
+
+                <div class="privacy-content">
+
+
+                    <!-- =================================================
+                         INTRO
+                    ================================================== -->
+
+                    <section class="privacy-intro">
+
+                        <div class="privacy-intro-icon">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </div>
+
+
+                        <h2>
+                            Məlumatlarınızın təhlükəsizliyi bizim üçün vacibdir
+                        </h2>
+
+
+                        <p>
+
+                            ADA Student AI platformasından istifadə edərkən
+                            məxfiliyinizə və şəxsi məlumatlarınızın qorunmasına
+                            xüsusi diqqət yetiririk. Bu səhifədə hansı məlumatların
+                            toplana biləcəyi, onların hansı məqsədlə istifadə
+                            edildiyi və məlumatların qorunması ilə bağlı əsas
+                            prinsiplər izah olunur.
+
+                        </p>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         1
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-circle-info"></i>
+
+                            1. Ümumi məlumat
+
+                        </h3>
+
+
+                        <p>
+
+                            <strong>ADA Student AI</strong> təhsil məqsədilə
+                            hazırlanmış süni intellekt platformasıdır.
+                            Platformanın əsas məqsədi istifadəçilərə dərslərin
+                            öyrənilməsi, sualların cavablandırılması və müxtəlif
+                            təhsil tapşırıqlarında kömək göstərməkdir.
+
+                        </p>
+
+
+                        <div class="info-box">
+
+                            <i class="fa-solid fa-lightbulb"></i>
+
+                            <span>
+
+                                Platformadan istifadə etməklə siz bu səhifədə
+                                göstərilən məxfilik prinsipləri ilə tanış olduğunuzu
+                                təsdiqləmiş olursunuz.
+
+                            </span>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         2
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-database"></i>
+
+                            2. Toplana bilən məlumatlar
+
+                        </h3>
+
+
+                        <p>
+
+                            Platformadan istifadə zamanı xidmətlərin düzgün
+                            işləməsi üçün müəyyən məlumatlar sistem tərəfindən
+                            emal edilə bilər.
+
+                        </p>
+
+
+                        <ul>
+
+                            <li>
+                                Hesab yaradılarkən təqdim etdiyiniz ad və
+                                e-poçt məlumatları.
+                            </li>
+
+                            <li>
+                                Hesab və giriş məlumatları.
+                            </li>
+
+                            <li>
+                                ADA Student AI ilə apardığınız söhbətlərin
+                                sistem tərəfindən saxlanılan tarixçəsi.
+                            </li>
+
+                            <li>
+                                Platformanın işləməsi üçün tələb olunan texniki
+                                məlumatlar.
+                            </li>
+
+                            <li>
+                                Könüllü şəkildə yüklədiyiniz şəkil və digər
+                                məzmunlar.
+                            </li>
+
+                        </ul>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         3
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-gears"></i>
+
+                            3. Məlumatlardan necə istifadə olunur?
+
+                        </h3>
+
+
+                        <p>
+
+                            Toplanan və ya istifadəçi tərəfindən təqdim edilən
+                            məlumatlar əsasən xidmətin təqdim edilməsi və
+                            platformanın işlək vəziyyətdə saxlanılması üçün
+                            istifadə olunur.
+
+                        </p>
+
+
+                        <ul>
+
+                            <li>
+                                Hesabınızı idarə etmək və sizi autentifikasiya etmək.
+                            </li>
+
+                            <li>
+                                Söhbət tarixçəsini göstərmək və idarə etmək.
+                            </li>
+
+                            <li>
+                                Süni intellekt xidmətlərinin işləməsini təmin etmək.
+                            </li>
+
+                            <li>
+                                Platformanın texniki problemlərini aşkar etmək və
+                                xidmətin keyfiyyətini yaxşılaşdırmaq.
+                            </li>
+
+                            <li>
+                                Təhlükəsizlik və sui-istifadənin qarşısının
+                                alınmasına kömək etmək.
+                            </li>
+
+                        </ul>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         4
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-comments"></i>
+
+                            4. Söhbət və AI sorğuları
+
+                        </h3>
+
+
+                        <p>
+
+                            ADA Student AI-yə göndərdiyiniz suallar və mesajlar
+                            xidmətin cavab yaratması üçün emal edilə bilər.
+                            Hesabınızla əlaqəli söhbət tarixçəsi platformada
+                            istifadəçi təcrübəsini yaxşılaşdırmaq və əvvəlki
+                            söhbətlərə qayıtmağa imkan vermək məqsədilə saxlanıla
+                            bilər.
+
+                        </p>
+
+
+                        <div class="info-box">
+
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+
+                            <span>
+
+                                Parol, bank kartı məlumatları, API açarları və digər
+                                məxfi təhlükəsizlik məlumatlarını AI çatına
+                                göndərməməyiniz tövsiyə olunur.
+
+                            </span>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         5
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-image"></i>
+
+                            5. Şəkil və fayllar
+
+                        </h3>
+
+
+                        <p>
+
+                            İstifadəçi tərəfindən söhbət zamanı yüklənən şəkillər
+                            və digər fayllar sorğunun emal edilməsi üçün sistem
+                            tərəfindən istifadə oluna bilər.
+
+                        </p>
+
+
+                        <p style="margin-top: 10px;">
+
+                            Şəxsi və məxfi məlumatların olduğu sənədləri və
+                            şəkilləri yalnız zəruri olduğu halda yükləməyiniz
+                            tövsiyə olunur.
+
+                        </p>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         6
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                            6. Məlumatların təhlükəsizliyi
+
+                        </h3>
+
+
+                        <p>
+
+                            İstifadəçi məlumatlarının qorunması üçün texniki və
+                            təşkilati təhlükəsizlik tədbirlərindən istifadə
+                            edilməsinə çalışılır.
+
+                        </p>
+
+
+                        <ul>
+
+                            <li>
+                                Hesab məlumatlarının qorunması.
+                            </li>
+
+                            <li>
+                                İcazəsiz girişlərin qarşısının alınmasına
+                                yönəlmiş təhlükəsizlik tədbirləri.
+                            </li>
+
+                            <li>
+                                Server və verilənlər bazasının qorunması.
+                            </li>
+
+                            <li>
+                                Sistem fəaliyyətlərinin monitorinqi və
+                                təhlükəsizlik tədbirlərinin təkmilləşdirilməsi.
+                            </li>
+
+                        </ul>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         7
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-network-wired"></i>
+
+                            7. Üçüncü tərəf xidmətləri
+
+                        </h3>
+
+
+                        <p>
+
+                            ADA Student AI-nin müəyyən funksiyalarının işləməsi
+                            üçün üçüncü tərəf texnologiyalarından və xidmət
+                            provayderlərindən istifadə oluna bilər.
+
+                        </p>
+
+
+                        <p style="margin-top: 10px;">
+
+                            Bu xidmətlərə süni intellekt, autentifikasiya,
+                            hosting, verilənlər bazası, analitika və digər texniki
+                            xidmətlər daxil ola bilər.
+
+                        </p>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         8
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-cookie-bite"></i>
+
+                            8. Cookie və Local Storage
+
+                        </h3>
+
+
+                        <p>
+
+                            Platformanın müəyyən funksiyalarında brauzerin
+                            localStorage və ya oxşar texnologiyalarından istifadə
+                            oluna bilər.
+
+                        </p>
+
+
+                        <ul>
+
+                            <li>
+                                İstifadəçi interfeysinin seçimlərini yadda saxlamaq.
+                            </li>
+
+                            <li>
+                                Qaranlıq və açıq rejim seçimini yadda saxlamaq.
+                            </li>
+
+                            <li>
+                                Platformanın müəyyən istifadəçi parametrlərini
+                                qorumaq.
+                            </li>
+
+                        </ul>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         9
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-user-shield"></i>
+
+                            9. İstifadəçi hüquqları
+
+                        </h3>
+
+
+                        <p>
+
+                            İstifadəçilər öz hesabları və şəxsi məlumatları ilə
+                            bağlı məlumat almaq, məlumatların düzəldilməsini
+                            tələb etmək və mövcud olduqda hesab və məlumatların
+                            silinməsi ilə bağlı müraciət etmək hüququna malik
+                            ola bilərlər.
+
+                        </p>
+
+
+                        <div class="info-box">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                            <span>
+
+                                Belə müraciətlər üçün aşağıda göstərilən dəstək
+                                e-poçt ünvanından istifadə edə bilərsiniz.
+
+                            </span>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         10
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-children"></i>
+
+                            10. Uşaqların məxfiliyi
+
+                        </h3>
+
+
+                        <p>
+
+                            Platforma əsasən təhsil məqsədləri üçün nəzərdə
+                            tutulmuşdur. Yetkinlik yaşına çatmayan istifadəçilərin
+                            platformadan istifadəsi zamanı valideyn və ya qanuni
+                            nümayəndənin nəzarəti tövsiyə olunur.
+
+                        </p>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         11
+                    ================================================== -->
+
+                    <section class="privacy-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-file-pen"></i>
+
+                            11. Gizlilik siyasətində dəyişikliklər
+
+                        </h3>
+
+
+                        <p>
+
+                            Platformanın funksiyaları və xidmətləri zamanla
+                            dəyişə bilər. Bu səbəbdən gizlilik siyasətinə
+                            gələcəkdə əlavə və ya dəyişikliklər edilə bilər.
+
+                        </p>
+
+
+                        <p style="margin-top: 10px;">
+
+                            Əhəmiyyətli dəyişikliklər olduqda istifadəçilərin
+                            məlumatlandırılması üçün platformada müvafiq
+                            bildirişlər göstərilə bilər.
+
+                        </p>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         12
+                    ================================================== -->
+
+                    <section class="privacy-card contact-card">
+
+                        <h3>
+
+                            <i class="fa-solid fa-headset"></i>
+
+                            12. Əlaqə və dəstək
+
+                        </h3>
+
+
+                        <p>
+
+                            Gizlilik, hesabınız və ya şəxsi məlumatlarınızla
+                            bağlı hər hansı sualınız yaranarsa bizimlə əlaqə
+                            saxlaya bilərsiniz.
+
+                        </p>
+
+
+                        <a
+                            class="email-link"
+                            href="mailto:adadeveloper2025@gmail.com">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                            adadeveloper2025@gmail.com
+
+                        </a>
+
+                    </section>
+
+
+                    <!-- =================================================
+                         LAST UPDATE
+                    ================================================== -->
+
+                    <div class="last-update">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        Son yenilənmə: Sentyabr 2026
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =================================================
+                     RIGHT 300x250 AD
+                ================================================== -->
+
+                <aside class="privacy-side-ad">
+
+                    <script type="text/javascript">
+                        atOptions = {
+                            'key' : '32c0d5d001f16a4abbab1b16495876d7',
+                            'format' : 'iframe',
+                            'height' : 250,
+                            'width' : 300,
+                            'params' : {}
+                        };
+                    </script>
+
+                    <script
+                        type="text/javascript"
+                        src="https://www.highrevenueformat.com/32c0d5d001f16a4abbab1b16495876d7/invoke.js">
+                    </script>
+
+                </aside>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 BOTTOM 728x90 AD
+            ================================================== -->
+
+            <div class="privacy-bottom-ad">
+
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : 'b4aa0de4c99e09f953836c06fc79b41b',
+                        'format' : 'iframe',
+                        'height' : 90,
+                        'width' : 728,
+                        'params' : {}
+                    };
+                </script>
+
+                <script
+                    type="text/javascript"
+                    src="https://www.highrevenueformat.com/b4aa0de4c99e09f953836c06fc79b41b/invoke.js">
+                </script>
+
+            </div>
 
 
         </div>
-
-
-        <!-- =====================================================
-             INTRO
-        ====================================================== -->
-
-        <section class="privacy-intro">
-
-
-            <div class="privacy-intro-icon">
-
-                <i class="fa-solid fa-lock"></i>
-
-            </div>
-
-
-            <h2>
-                Məlumatlarınızın təhlükəsizliyi bizim üçün vacibdir
-            </h2>
-
-
-            <p>
-
-                ADA Student AI platformasından istifadə edərkən
-                məxfiliyinizə və şəxsi məlumatlarınızın qorunmasına
-                xüsusi diqqət yetiririk. Bu səhifədə hansı məlumatların
-                toplana biləcəyi, onların hansı məqsədlə istifadə
-                edildiyi və məlumatların qorunması ilə bağlı əsas
-                prinsiplər izah olunur.
-
-            </p>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             1. ÜMUMİ MƏLUMAT
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-circle-info"></i>
-
-                1. Ümumi məlumat
-
-            </h3>
-
-
-            <p>
-
-                <strong>ADA Student AI</strong> təhsil məqsədilə
-                hazırlanmış süni intellekt platformasıdır.
-                Platformanın əsas məqsədi istifadəçilərə dərslərin
-                öyrənilməsi, sualların cavablandırılması və müxtəlif
-                təhsil tapşırıqlarında kömək göstərməkdir.
-
-            </p>
-
-
-            <div class="info-box">
-
-                <i class="fa-solid fa-lightbulb"></i>
-
-                <span>
-
-                    Platformadan istifadə etməklə siz bu səhifədə
-                    göstərilən məxfilik prinsipləri ilə tanış olduğunuzu
-                    təsdiqləmiş olursunuz.
-
-                </span>
-
-            </div>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             2. TOPLANA BİLƏN MƏLUMATLAR
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-database"></i>
-
-                2. Toplana bilən məlumatlar
-
-            </h3>
-
-
-            <p>
-
-                Platformadan istifadə zamanı xidmətlərin düzgün
-                işləməsi üçün müəyyən məlumatlar sistem tərəfindən
-                emal edilə bilər.
-
-            </p>
-
-
-            <ul>
-
-                <li>
-                    Hesab yaradılarkən təqdim etdiyiniz ad və
-                    e-poçt məlumatları.
-                </li>
-
-                <li>
-                    Hesab və giriş məlumatları.
-                </li>
-
-                <li>
-                    ADA Student AI ilə apardığınız söhbətlərin
-                    sistem tərəfindən saxlanılan tarixçəsi.
-                </li>
-
-                <li>
-                    Platformanın işləməsi üçün tələb olunan texniki
-                    məlumatlar.
-                </li>
-
-                <li>
-                    Könüllü şəkildə yüklədiyiniz şəkil və digər
-                    məzmunlar.
-                </li>
-
-            </ul>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             3. MƏLUMATLARDAN İSTİFADƏ
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-gears"></i>
-
-                3. Məlumatlardan necə istifadə olunur?
-
-            </h3>
-
-
-            <p>
-
-                Toplanan və ya istifadəçi tərəfindən təqdim edilən
-                məlumatlar əsasən xidmətin təqdim edilməsi və
-                platformanın işlək vəziyyətdə saxlanılması üçün
-                istifadə olunur.
-
-            </p>
-
-
-            <ul>
-
-                <li>
-                    Hesabınızı idarə etmək və sizi autentifikasiya etmək.
-                </li>
-
-                <li>
-                    Söhbət tarixçəsini göstərmək və idarə etmək.
-                </li>
-
-                <li>
-                    Süni intellekt xidmətlərinin işləməsini təmin etmək.
-                </li>
-
-                <li>
-                    Platformanın texniki problemlərini aşkar etmək və
-                    xidmətin keyfiyyətini yaxşılaşdırmaq.
-                </li>
-
-                <li>
-                    Təhlükəsizlik və sui-istifadənin qarşısının
-                    alınmasına kömək etmək.
-                </li>
-
-            </ul>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             4. SÖHBƏT VƏ AI SORĞULARI
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-comments"></i>
-
-                4. Söhbət və AI sorğuları
-
-            </h3>
-
-
-            <p>
-
-                ADA Student AI-yə göndərdiyiniz suallar və mesajlar
-                xidmətin cavab yaratması üçün emal edilə bilər.
-                Hesabınızla əlaqəli söhbət tarixçəsi platformada
-                istifadəçi təcrübəsini yaxşılaşdırmaq və əvvəlki
-                söhbətlərə qayıtmağa imkan vermək məqsədilə saxlanıla
-                bilər.
-
-            </p>
-
-
-            <div class="info-box">
-
-                <i class="fa-solid fa-triangle-exclamation"></i>
-
-                <span>
-
-                    Parol, bank kartı məlumatları, API açarları və digər
-                    məxfi təhlükəsizlik məlumatlarını AI çatına
-                    göndərməməyiniz tövsiyə olunur.
-
-                </span>
-
-            </div>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             5. ŞƏKİL VƏ FAYLLAR
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-image"></i>
-
-                5. Şəkil və fayllar
-
-            </h3>
-
-
-            <p>
-
-                İstifadəçi tərəfindən söhbət zamanı yüklənən şəkillər
-                və digər fayllar sorğunun emal edilməsi üçün sistem
-                tərəfindən istifadə oluna bilər.
-
-            </p>
-
-
-            <p style="margin-top: 10px;">
-
-                Şəxsi və məxfi məlumatların olduğu sənədləri və
-                şəkilləri yalnız zəruri olduğu halda yükləməyiniz
-                tövsiyə olunur.
-
-            </p>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             6. TƏHLÜKƏSİZLİK
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-shield-halved"></i>
-
-                6. Məlumatların təhlükəsizliyi
-
-            </h3>
-
-
-            <p>
-
-                İstifadəçi məlumatlarının qorunması üçün texniki və
-                təşkilati təhlükəsizlik tədbirlərindən istifadə
-                edilməsinə çalışılır.
-
-            </p>
-
-
-            <ul>
-
-                <li>
-                    Hesab məlumatlarının qorunması.
-                </li>
-
-                <li>
-                    İcazəsiz girişlərin qarşısının alınmasına
-                    yönəlmiş təhlükəsizlik tədbirləri.
-                </li>
-
-                <li>
-                    Server və verilənlər bazasının qorunması.
-                </li>
-
-                <li>
-                    Sistem fəaliyyətlərinin monitorinqi və
-                    təhlükəsizlik tədbirlərinin təkmilləşdirilməsi.
-                </li>
-
-            </ul>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             7. ÜÇÜNCÜ TƏRƏF
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-network-wired"></i>
-
-                7. Üçüncü tərəf xidmətləri
-
-            </h3>
-
-
-            <p>
-
-                ADA Student AI-nin müəyyən funksiyalarının işləməsi
-                üçün üçüncü tərəf texnologiyalarından və xidmət
-                provayderlərindən istifadə oluna bilər.
-
-            </p>
-
-
-            <p style="margin-top: 10px;">
-
-                Bu xidmətlərə süni intellekt, autentifikasiya,
-                hosting, verilənlər bazası, analitika və digər texniki
-                xidmətlər daxil ola bilər.
-
-            </p>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             8. COOKIE
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-cookie-bite"></i>
-
-                8. Cookie və Local Storage
-
-            </h3>
-
-
-            <p>
-
-                Platformanın müəyyən funksiyalarında brauzerin
-                localStorage və ya oxşar texnologiyalarından istifadə
-                oluna bilər.
-
-            </p>
-
-
-            <ul>
-
-                <li>
-                    İstifadəçi interfeysinin seçimlərini yadda saxlamaq.
-                </li>
-
-                <li>
-                    Qaranlıq və açıq rejim seçimini yadda saxlamaq.
-                </li>
-
-                <li>
-                    Platformanın müəyyən istifadəçi parametrlərini
-                    qorumaq.
-                </li>
-
-            </ul>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             9. İSTİFADƏÇİ HÜQUQLARI
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-user-shield"></i>
-
-                9. İstifadəçi hüquqları
-
-            </h3>
-
-
-            <p>
-
-                İstifadəçilər öz hesabları və şəxsi məlumatları ilə
-                bağlı məlumat almaq, məlumatların düzəldilməsini
-                tələb etmək və mövcud olduqda hesab və məlumatların
-                silinməsi ilə bağlı müraciət etmək hüququna malik
-                ola bilərlər.
-
-            </p>
-
-
-            <div class="info-box">
-
-                <i class="fa-solid fa-envelope"></i>
-
-                <span>
-
-                    Belə müraciətlər üçün aşağıda göstərilən dəstək
-                    e-poçt ünvanından istifadə edə bilərsiniz.
-
-                </span>
-
-            </div>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             10. UŞAQLARIN MƏXFİLİYİ
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-children"></i>
-
-                10. Uşaqların məxfiliyi
-
-            </h3>
-
-
-            <p>
-
-                Platforma əsasən təhsil məqsədləri üçün nəzərdə
-                tutulmuşdur. Yetkinlik yaşına çatmayan istifadəçilərin
-                platformadan istifadəsi zamanı valideyn və ya qanuni
-                nümayəndənin nəzarəti tövsiyə olunur.
-
-            </p>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             11. DƏYİŞİKLİKLƏR
-        ====================================================== -->
-
-        <section class="privacy-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-file-pen"></i>
-
-                11. Gizlilik siyasətində dəyişikliklər
-
-            </h3>
-
-
-            <p>
-
-                Platformanın funksiyaları və xidmətləri zamanla
-                dəyişə bilər. Bu səbəbdən gizlilik siyasətinə
-                gələcəkdə əlavə və ya dəyişikliklər edilə bilər.
-
-            </p>
-
-
-            <p style="margin-top: 10px;">
-
-                Əhəmiyyətli dəyişikliklər olduqda istifadəçilərin
-                məlumatlandırılması üçün platformada müvafiq
-                bildirişlər göstərilə bilər.
-
-            </p>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             12. ƏLAQƏ
-        ====================================================== -->
-
-        <section class="privacy-card contact-card">
-
-
-            <h3>
-
-                <i class="fa-solid fa-headset"></i>
-
-                12. Əlaqə və dəstək
-
-            </h3>
-
-
-            <p>
-
-                Gizlilik, hesabınız və ya şəxsi məlumatlarınızla
-                bağlı hər hansı sualınız yaranarsa bizimlə əlaqə
-                saxlaya bilərsiniz.
-
-            </p>
-
-
-            <a
-                class="email-link"
-                href="mailto:adadeveloper2025@gmail.com">
-
-                <i class="fa-solid fa-envelope"></i>
-
-                adadeveloper2025@gmail.com
-
-            </a>
-
-
-        </section>
-
-
-        <!-- =====================================================
-             LAST UPDATE
-        ====================================================== -->
-
-        <div class="last-update">
-
-            <i class="fa-regular fa-calendar"></i>
-
-            Son yenilənmə: Sentyabr 2026
-
-        </div>
-
 
     </main>
+
+
+    <!-- =========================================================
+         EXTRA PROFITABLERATE AD SCRIPT
+    ========================================================== -->
+
+    <script
+        async="async"
+        data-cfasync="false"
+        src="https://pl31427578.profitableratecpmnetwork.com/af/e6/22/afe622a8e673f24563ea9ff5f00b51df.js">
+    </script>
 
 
     <!-- =========================================================
@@ -2268,7 +2451,6 @@
     ========================================================== -->
 
     <script>
-
 
         /* =========================================================
            ELEMENTS
@@ -2308,7 +2490,6 @@
             if (sidebar) {
 
                 sidebar.classList.add('open');
-
                 sidebar.classList.add('active');
             }
 
@@ -2335,7 +2516,6 @@
             if (sidebar) {
 
                 sidebar.classList.remove('open');
-
                 sidebar.classList.remove('active');
             }
 
@@ -2688,7 +2868,6 @@
                 }
             }
         );
-
 
     </script>
 

@@ -1,19 +1,56 @@
 <!DOCTYPE html>
+
 <html lang="az">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qeydiyyat | Ada AI</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome İkonları -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="icon" type="image/jpeg" href="/ada-logo.jpeg">
-     <script src="/js/language.js"></script>
+
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Qeydiyyat | Ada AI</title>
+
+
+<!-- Google Fonts -->
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+
+<!-- FontAwesome -->
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+>
+
+
+<!-- Favicon -->
+
+<link
+    rel="icon"
+    type="image/jpeg"
+    href="/ada-logo.jpeg"
+>
+
+
+<!-- Language -->
+
+<script src="/js/language.js"></script>
 
 
 <style>
+
+    /* =====================================================
+       RESET
+    ===================================================== */
+
     * {
         margin: 0;
         padding: 0;
@@ -21,351 +58,1493 @@
         font-family: 'Inter', sans-serif;
     }
 
-    html, body {
+
+    html {
+
         width: 100%;
-        height: 100%;
-        min-height: 100vh;
-        min-height: 100dvh;
+
+        min-height: 100%;
+
         background-color: #0e141f;
+
         overflow-x: hidden;
     }
 
+
     body {
-        background: 
-            radial-gradient(circle at 85% 10%, rgba(34, 211, 238, 0.13), transparent 28%),
-            radial-gradient(circle at 50% 80%, rgba(109, 93, 252, 0.18), transparent 50%),
-            linear-gradient(135deg, #121928, #0e141f);
+
+        width: 100%;
+
+        min-height: 100vh;
+
+        min-height: 100dvh;
+
+        background:
+            radial-gradient(
+                circle at 85% 10%,
+                rgba(34, 211, 238, 0.13),
+                transparent 28%
+            ),
+
+            radial-gradient(
+                circle at 50% 80%,
+                rgba(109, 93, 252, 0.18),
+                transparent 50%
+            ),
+
+            linear-gradient(
+                135deg,
+                #121928,
+                #0e141f
+            );
+
         background-attachment: fixed;
+
         background-size: cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+
         color: #f8fafc;
-        padding: 16px;
-        padding-top: max(16px, env(safe-area-inset-top));
-        padding-bottom: max(16px, env(safe-area-inset-bottom));
-        position: relative;
+
+        padding: 20px;
+
+        padding-top:
+            max(
+                20px,
+                env(safe-area-inset-top)
+            );
+
+        padding-bottom:
+            max(
+                20px,
+                env(safe-area-inset-bottom)
+            );
+
+        overflow-x: hidden;
     }
 
+
+    /* =====================================================
+       BACKGROUND BLOBS
+    ===================================================== */
+
     .background-blobs {
+
         position: fixed;
+
         top: 0;
         left: 0;
+
         width: 100%;
         height: 100%;
+
         pointer-events: none;
+
         overflow: hidden;
+
         z-index: 0;
     }
 
+
     .background-blobs .blob {
+
         position: absolute;
+
         width: 350px;
         height: 350px;
+
         border-radius: 50%;
+
         filter: blur(80px);
+
         opacity: 0.35;
     }
 
 
+    .blob-1 {
+
+        top: -120px;
+        right: -100px;
+
+        background:
+            rgba(
+                34,
+                211,
+                238,
+                0.15
+            );
+    }
+
+
+    .blob-2 {
+
+        bottom: -150px;
+        left: -120px;
+
+        background:
+            rgba(
+                109,
+                93,
+                252,
+                0.18
+            );
+    }
+
+
+    /* =====================================================
+       ƏSAS WRAPPER
+    ===================================================== */
+
+    .page-wrapper {
+
+        width: 100%;
+
+        min-height:
+            calc(
+                100vh - 40px
+            );
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 18px;
+
+        position: relative;
+
+        z-index: 2;
+    }
+
+
+    /* =====================================================
+       728x90 YUXARI REKLAM
+    ===================================================== */
+
+    .top-ad {
+
+        width: 728px;
+
+        max-width: 100%;
+
+        min-height: 90px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        overflow: hidden;
+
+        position: relative;
+
+        z-index: 5;
+    }
+
+
+    /* =====================================================
+       REGISTER + REKLAMLAR
+    ===================================================== */
+
+    .register-layout {
+
+        width: 100%;
+
+        max-width: 1100px;
+
+        display: grid;
+
+        grid-template-columns:
+            300px
+            minmax(360px, 440px)
+            300px;
+
+        justify-content: center;
+
+        align-items: center;
+
+        gap: 25px;
+
+        position: relative;
+    }
+
+
+    /* =====================================================
+       300x250 YAN REKLAM
+    ===================================================== */
+
+    .side-ad {
+
+        width: 300px;
+
+        min-height: 250px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        overflow: hidden;
+
+        position: relative;
+
+        z-index: 5;
+    }
+
+
+    .side-ad-left {
+
+        justify-self: end;
+    }
+
+
+    .side-ad-right {
+
+        justify-self: start;
+    }
+
+
+    /* =====================================================
+       REGISTER CONTAINER
+    ===================================================== */
 
     .register-container {
+
         width: 100%;
+
         max-width: 440px;
-        z-index: 1;
+
+        position: relative;
+
+        z-index: 10;
     }
+
+
+    /* =====================================================
+       REGISTER CARD
+    ===================================================== */
 
     .register-card {
-        background: rgba(30, 41, 59, 0.75);
+
+        width: 100%;
+
+        background:
+            rgba(
+                30,
+                41,
+                59,
+                0.75
+            );
+
         backdrop-filter: blur(16px);
+
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            );
+
         padding: 32px 28px;
+
         border-radius: 24px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+        box-shadow:
+
+            0 20px 25px -5px
+            rgba(
+                0,
+                0,
+                0,
+                0.3
+            ),
+
+            0 8px 10px -6px
+            rgba(
+                0,
+                0,
+                0,
+                0.3
+            );
     }
 
+
+    /* =====================================================
+       BRAND HEADER
+    ===================================================== */
+
     .brand-header {
+
         text-align: center;
+
         margin-bottom: 24px;
     }
 
+
     .logo-icon {
-        width: 85px; 
+
+        width: 85px;
+
         height: 85px;
+
         background: transparent;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
-        margin: 0 auto 12px auto;
+
+        margin:
+            0 auto 12px auto;
+
         border-radius: 18px;
+
         overflow: hidden;
-        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+
+        box-shadow:
+            0 10px 15px -3px
+            rgba(
+                99,
+                102,
+                241,
+                0.3
+            );
     }
+
 
     .logo-icon img {
+
         width: 100%;
+
         height: 100%;
+
         object-fit: cover;
+
+        display: block;
     }
 
+
     .brand-header h1 {
+
         font-size: 24px;
+
         font-weight: 700;
-        margin-bottom: 6px;
+
+        margin-bottom: 8px;
+
         color: #ffffff;
     }
 
+
     .brand-header p {
+
         font-size: 13px;
+
         color: #94a3b8;
+
         line-height: 1.4;
     }
 
+
+    /* =====================================================
+       ERROR ALERT
+    ===================================================== */
+
     .error-alert {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.3);
+
+        background:
+            rgba(
+                239,
+                68,
+                68,
+                0.15
+            );
+
+        border:
+            1px solid
+            rgba(
+                239,
+                68,
+                68,
+                0.3
+            );
+
         color: #fca5a5;
+
         padding: 10px 14px;
+
         border-radius: 12px;
+
         font-size: 13px;
+
         margin-bottom: 16px;
+
         display: flex;
+
         align-items: center;
+
         gap: 10px;
     }
 
+
+    /* =====================================================
+       INPUT GROUP
+    ===================================================== */
+
     .input-group {
+
         margin-bottom: 16px;
     }
 
+
     .input-group label {
+
         display: block;
+
         font-size: 13px;
+
         font-weight: 500;
+
         margin-bottom: 6px;
+
         color: #cbd5e1;
     }
 
+
+    /* =====================================================
+       INPUT FIELD
+    ===================================================== */
+
     .input-field {
+
         position: relative;
+
         display: flex;
+
         align-items: center;
     }
 
-    .input-field i {
+
+    .input-field > i {
+
         position: absolute;
+
         left: 16px;
+
         color: #64748b;
+
         font-size: 16px;
+
+        z-index: 2;
     }
+
 
     .input-field i.toggle-password {
+
         left: auto;
+
         right: 16px;
+
         cursor: pointer;
-        transition: color 0.2s;
+
+        transition:
+            color 0.2s;
     }
+
 
     .input-field i.toggle-password:hover {
+
         color: #ffffff;
     }
+
 
     .input-field input {
+
         width: 100%;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 12px 16px 12px 46px;
+
+        background:
+            rgba(
+                15,
+                23,
+                42,
+                0.6
+            );
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            );
+
+        padding:
+            12px
+            46px
+            12px
+            46px;
+
         border-radius: 12px;
+
         color: #ffffff;
+
         font-size: 14px;
+
         outline: none;
-        transition: all 0.3s ease;
+
+        transition:
+            all 0.3s ease;
     }
+
+
+    .input-field input::placeholder {
+
+        color: #64748b;
+    }
+
 
     .input-field input:focus {
+
         border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(
+                99,
+                102,
+                241,
+                0.2
+            );
     }
 
+
+    /* =====================================================
+       SUBMIT
+    ===================================================== */
+
     .submit-btn {
+
         width: 100%;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+
+        background:
+            linear-gradient(
+                135deg,
+                #6366f1,
+                #4f46e5
+            );
+
         color: white;
+
         border: none;
+
         padding: 12px;
+
         border-radius: 12px;
+
         font-size: 15px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+
+        transition:
+            all 0.3s ease;
+
+        box-shadow:
+            0 4px 12px
+            rgba(
+                99,
+                102,
+                241,
+                0.4
+            );
+
         margin-top: 6px;
     }
 
+
     .submit-btn:hover {
-        background: linear-gradient(135deg, #4f46e5, #4338ca);
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.6);
-        transform: translateY(-1px);
+
+        background:
+            linear-gradient(
+                135deg,
+                #4f46e5,
+                #4338ca
+            );
+
+        box-shadow:
+            0 6px 16px
+            rgba(
+                99,
+                102,
+                241,
+                0.6
+            );
+
+        transform:
+            translateY(-1px);
     }
 
+
+    .submit-btn:active {
+
+        transform:
+            translateY(0);
+    }
+
+
+    /* =====================================================
+       DIVIDER
+    ===================================================== */
+
     .divider {
+
         display: flex;
+
         align-items: center;
+
         text-align: center;
+
         margin: 18px 0;
+
         color: #64748b;
+
         font-size: 13px;
     }
 
-    .divider::before, .divider::after {
+
+    .divider::before,
+    .divider::after {
+
         content: '';
+
         flex: 1;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        border-bottom:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            );
     }
+
 
     .divider span {
-        padding: 0 12px;
+
+        padding:
+            0 12px;
     }
+
+
+    /* =====================================================
+       GOOGLE BUTTON
+    ===================================================== */
 
     .social-btn {
+
         width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        background:
+            rgba(
+                255,
+                255,
+                255,
+                0.05
+            );
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            );
+
         padding: 11px;
+
         border-radius: 12px;
+
         color: #ffffff;
+
         font-size: 14px;
+
         font-weight: 500;
+
         cursor: pointer;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         gap: 10px;
+
         text-decoration: none;
-        transition: background 0.2s, border-color 0.2s;
+
+        transition:
+            background 0.2s,
+            border-color 0.2s,
+            transform 0.2s;
     }
+
 
     .social-btn img {
+
         width: 18px;
+
         height: 18px;
+
+        display: block;
     }
+
 
     .social-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
+
+        background:
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            );
+
+        border-color:
+            rgba(
+                255,
+                255,
+                255,
+                0.2
+            );
+
+        transform:
+            translateY(-1px);
     }
 
+
+    /* =====================================================
+       LOGIN REDIRECT
+    ===================================================== */
+
     .login-redirect {
+
         text-align: center;
+
         margin-top: 18px;
+
         font-size: 14px;
+
         color: #94a3b8;
     }
 
+
     .login-redirect a {
+
         color: #818cf8;
+
         text-decoration: none;
+
         font-weight: 500;
     }
 
+
     .login-redirect a:hover {
+
         text-decoration: underline;
     }
+
+
+    /* =====================================================
+       AŞAĞI 728x90 REKLAM
+    ===================================================== */
+
+    .bottom-ad {
+
+        width: 728px;
+
+        max-width: 100%;
+
+        min-height: 90px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        overflow: hidden;
+
+        position: relative;
+
+        z-index: 5;
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 1200px) {
+
+        .register-layout {
+
+            grid-template-columns:
+                250px
+                minmax(360px, 440px)
+                250px;
+
+            gap: 18px;
+        }
+
+
+        .side-ad {
+
+            width: 250px;
+        }
+    }
+
+
+    /* =====================================================
+       PLANŞET
+    ===================================================== */
+
+    @media (max-width: 950px) {
+
+        .page-wrapper {
+
+            justify-content:
+                flex-start;
+
+            padding-top: 20px;
+        }
+
+
+        .top-ad,
+        .bottom-ad {
+
+            display: none;
+        }
+
+
+        .register-layout {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+
+        .side-ad {
+
+            display: none;
+        }
+
+
+        .register-container {
+
+            max-width: 440px;
+        }
+    }
+
+
+    /* =====================================================
+       MOBİL
+    ===================================================== */
+
+    @media (max-width: 500px) {
+
+        body {
+
+            padding-left: 12px;
+
+            padding-right: 12px;
+        }
+
+
+        .page-wrapper {
+
+            min-height: 100vh;
+
+            padding-top: 10px;
+        }
+
+
+        .register-card {
+
+            padding:
+                26px 20px;
+
+            border-radius: 20px;
+        }
+
+
+        .logo-icon {
+
+            width: 75px;
+
+            height: 75px;
+        }
+
+
+        .brand-header h1 {
+
+            font-size: 21px;
+        }
+
+
+        .brand-header p {
+
+            font-size: 12px;
+        }
+
+
+        .social-btn {
+
+            font-size: 14px;
+        }
+    }
+
+
+    /* =====================================================
+       ÇOX KİÇİK EKRAN
+    ===================================================== */
+
+    @media (max-width: 360px) {
+
+        .register-card {
+
+            padding:
+                22px 16px;
+        }
+
+
+        .brand-header h1 {
+
+            font-size: 19px;
+        }
+
+
+        .input-field input {
+
+            padding:
+                11px
+                42px
+                11px
+                42px;
+        }
+    }
+
 </style>
 
-
-
 </head>
+
 <body>
 
-    <div class="background-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
+
+<!-- =====================================================
+     BACKGROUND
+===================================================== -->
+
+<div class="background-blobs">
+
+    <div class="blob blob-1"></div>
+
+    <div class="blob blob-2"></div>
+
+</div>
+
+
+<!-- =====================================================
+     PAGE WRAPPER
+===================================================== -->
+
+<div class="page-wrapper">
+
+
+    <!-- =================================================
+         YUXARI 728x90 REKLAM
+    ================================================== -->
+
+    <div class="top-ad">
+
+        <script
+            async
+            src="https://pl31471578.profitableratecpmnetwork.com/af/e6/22/afe622a8e673f24563ea9ff5f00b51df.js">
+        </script>
+
+
+        <script>
+
+            atOptions = {
+
+                'key':
+                    'b4aa0de4c99e09f953836c06fc79b41b',
+
+                'format':
+                    'iframe',
+
+                'height':
+                    90,
+
+                'width':
+                    728,
+
+                'params':
+                    {}
+
+            };
+
+        </script>
+
+
+        <script
+            src="https://www.highrevenueformat.com/b4aa0de4c99e09f953836c06fc79b41b/invoke.js">
+        </script>
+
     </div>
 
-    <div class="register-container">
-        <div class="register-card">
-            <div class="brand-header">
-        <div class="brand-header">
-            <div class="logo-icon">
-                <img src="/ada-logo.jpeg" alt="Logo">
-            </div>
-            <h1>ADA STUDENT Aİ</h1>
-          <br>Dərslərinizdə biz də kömək edək (ADA AI)</p>
+
+    <!-- =================================================
+         REGISTER LAYOUT
+    ================================================== -->
+
+    <div class="register-layout">
+
+
+        <!-- =============================================
+             SOL 300x250 REKLAM
+        ============================================== -->
+
+        <div class="side-ad side-ad-left">
+
+            <script>
+
+                atOptions = {
+
+                    'key':
+                        '32c0d5d001f16a4abbab1b16495876d7',
+
+                    'format':
+                        'iframe',
+
+                    'height':
+                        250,
+
+                    'width':
+                        300,
+
+                    'params':
+                        {}
+
+                };
+
+            </script>
+
+
+            <script
+                src="https://www.highrevenueformat.com/32c0d5d001f16a4abbab1b16495876d7/invoke.js">
+            </script>
+
         </div>
 
-            <!-- Serverdən xəta gələrsə göstəriləcək blok -->
-            <% if (locals.errorMessage) { %>
-                <div class="error-alert">
-                    <i class="fa-solid fa-circle-exclamation"></i>
-                    <span><%= errorMessage %></span>
-                </div>
-            <% } %>
 
-            <!-- Normal Form Qeydiyyatı -->
-            <form action="/register" method="POST">
-                <div class="input-group">
-                    <label for="fullname">Ad və Soyad</label>
-                    <div class="input-field">
-                        <i class="fa-regular fa-user"></i>
-                        <input type="text" id="fullname" name="fullname" placeholder="Məs: Əli Əliyev" required>
+        <!-- =============================================
+             REGISTER CONTAINER
+        ============================================== -->
+
+        <div class="register-container">
+
+
+            <div class="register-card">
+
+
+                <!-- BRAND -->
+
+                <div class="brand-header">
+
+                    <div class="logo-icon">
+
+                        <img
+                            src="/ada-logo.jpeg"
+                            alt="ADA AI Logo"
+                        >
+
                     </div>
+
+
+                    <h1>
+                        ADA STUDENT Aİ
+                    </h1>
+
+
+                    <p>
+                        Dərslərinizdə biz də kömək edək (ADA AI)
+                    </p>
+
                 </div>
 
-                <div class="input-group">
-                    <label for="email">E-poçt ünvanı</label>
-                    <div class="input-field">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input type="email" id="email" name="email" placeholder="ornek@mail.com" required>
+
+                <!-- SERVER ERROR -->
+
+                <% if (locals.errorMessage) { %>
+
+                    <div class="error-alert">
+
+                        <i
+                            class="fa-solid fa-circle-exclamation">
+                        </i>
+
+                        <span>
+                            <%= errorMessage %>
+                        </span>
+
                     </div>
-                </div>
 
-                <div class="input-group">
-                    <label for="password">Şifrə</label>
-                    <div class="input-field">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="password" name="password" placeholder="Ən az 6 simvol" required>
-                        <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
+                <% } %>
+
+
+                <!-- REGISTER FORM -->
+
+                <form
+                    action="/register"
+                    method="POST"
+                >
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="input-group">
+
+                        <label for="fullname">
+                            Ad və Soyad
+                        </label>
+
+
+                        <div class="input-field">
+
+                            <i
+                                class="fa-regular fa-user">
+                            </i>
+
+
+                            <input
+                                type="text"
+                                id="fullname"
+                                name="fullname"
+                                placeholder="Məs: Əli Əliyev"
+                                autocomplete="name"
+                                required
+                            >
+
+                        </div>
+
                     </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="input-group">
+
+                        <label for="email">
+                            E-poçt ünvanı
+                        </label>
+
+
+                        <div class="input-field">
+
+                            <i
+                                class="fa-regular fa-envelope">
+                            </i>
+
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="ornek@mail.com"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="input-group">
+
+                        <label for="password">
+                            Şifrə
+                        </label>
+
+
+                        <div class="input-field">
+
+                            <i
+                                class="fa-solid fa-lock">
+                            </i>
+
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Ən az 6 simvol"
+                                autocomplete="new-password"
+                                required
+                            >
+
+
+                            <i
+                                class="fa-regular fa-eye toggle-password"
+                                id="togglePassword">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SUBMIT -->
+
+                    <button
+                        type="submit"
+                        class="submit-btn"
+                    >
+
+                        <span>
+                            Qeydiyyatdan keç
+                        </span>
+
+
+                        <i
+                            class="fa-solid fa-arrow-right">
+                        </i>
+
+                    </button>
+
+                </form>
+
+
+                <!-- DIVIDER -->
+
+                <div class="divider">
+
+                    <span>
+                        və ya
+                    </span>
+
                 </div>
 
-                <button type="submit" class="submit-btn">
-                    <span>Qeydiyyatdan keç</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </form>
 
-            <div class="divider">
-                <span>və ya</span>
+                <!-- GOOGLE -->
+
+                <a
+                    href="/auth/google"
+                    class="social-btn"
+                >
+
+                    <img
+                        src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        alt="Google"
+                    >
+
+
+                    <span>
+                        Google ilə davam et
+                    </span>
+
+                </a>
+
+
+                <!-- LOGIN -->
+
+                <div class="login-redirect">
+
+                    Artıq hesabınız var?
+
+                    <a href="/login">
+                        Daxil olun
+                    </a>
+
+                </div>
+
+
             </div>
 
-            <!-- Google ilə Qeydiyyat/Giriş Düyməsi (Aktiv edildi) -->
-            <a href="/auth/google" class="social-btn">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-                <span>Google ilə davam et</span>
-            </a>
-
-            <div class="login-redirect">
-                Artıq hesabınız var? <a href="/login">Daxil olun</a>
-            </div>
         </div>
+
+
+        <!-- =============================================
+             SAĞ 300x250 REKLAM
+        ============================================== -->
+
+        <div class="side-ad side-ad-right">
+
+            <script>
+
+                atOptions = {
+
+                    'key':
+                        '32c0d5d001f16a4abbab1b16495876d7',
+
+                    'format':
+                        'iframe',
+
+                    'height':
+                        250,
+
+                    'width':
+                        300,
+
+                    'params':
+                        {}
+
+                };
+
+            </script>
+
+
+            <script
+                src="https://www.highrevenueformat.com/32c0d5d001f16a4abbab1b16495876d7/invoke.js">
+            </script>
+
+        </div>
+
+
     </div>
 
-    <script>
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
 
-        togglePassword.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-    </script>
+    <!-- =================================================
+         AŞAĞI 728x90 REKLAM
+    ================================================== -->
+
+    <div class="bottom-ad">
+
+        <script>
+
+            atOptions = {
+
+                'key':
+                    'b4aa0de4c99e09f953836c06fc79b41b',
+
+                'format':
+                    'iframe',
+
+                'height':
+                    90,
+
+                'width':
+                    728,
+
+                'params':
+                    {}
+
+            };
+
+        </script>
+
+
+        <script
+            src="https://www.highrevenueformat.com/b4aa0de4c99e09f953836c06fc79b41b/invoke.js">
+        </script>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     ƏLAVƏ REKLAM SCRIPT
+===================================================== -->
+
+<script
+    src="https://pl31427558.profitableratecpmnetwork.com/f4/da/4e/f4da4e31204a4437d47792be3b762d24.js">
+</script>
+
+
+<!-- =====================================================
+     PASSWORD SHOW / HIDE
+===================================================== -->
+
+<script>
+
+    const togglePassword =
+        document.getElementById(
+            'togglePassword'
+        );
+
+    const passwordInput =
+        document.getElementById(
+            'password'
+        );
+
+
+    if (
+        togglePassword &&
+        passwordInput
+    ) {
+
+        togglePassword.addEventListener(
+            'click',
+            function () {
+
+                const type =
+                    passwordInput.getAttribute(
+                        'type'
+                    ) === 'password'
+                        ? 'text'
+                        : 'password';
+
+
+                passwordInput.setAttribute(
+                    'type',
+                    type
+                );
+
+
+                this.classList.toggle(
+                    'fa-eye'
+                );
+
+
+                this.classList.toggle(
+                    'fa-eye-slash'
+                );
+
+            }
+        );
+
+    }
+
+</script>
+
+
 </body>
+
 </html>

@@ -10,6 +10,7 @@ import nodemailer from 'nodemailer';
 import sharp from 'sharp';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import multer from 'multer'
 import cors from 'cors';
 dotenv.config();
 import { franc } from 'franc';
@@ -25,7 +26,7 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
 
-
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(session({
     secret: process.env.SESSION_SECRET, // Birbaşa .env-dən oxuyur
@@ -1314,6 +1315,56 @@ function getStars(rating) {
 
 }
 
+
+
+
+import { toFile } from 'openai';
+
+app.post('/api/chat-image', upload.single('file'), async (req, res) => {
+  try {
+    const prompt = req.body.prompt || req.body.message;
+    const file = req.file;
+
+    let base64Image;
+
+    if (file) {
+      // Şəkil yüklənibsə redaktə edirik
+      const openaiFile = await toFile(file.buffer, file.originalname);
+      const response = await openai.images.edit({
+        image: openaiFile,
+        prompt: prompt || "Bu şəkli dəyiş",
+        n: 1,
+        size: "1024x1024"
+      });
+      
+      const imageUrl = response.data[0].url;
+      const imageRes = await fetch(imageUrl);
+      const arrayBuffer = await imageRes.arrayBuffer();
+      base64Image = Buffer.from(arrayBuffer).toString('base64');
+
+    } else {
+      // DALL-E 3 ilə sıfırdan şəkil yaradırıq
+      const response = await openai.images.generate({
+        model: "dall-e-3",
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024"
+      });
+
+      const imageUrl = response.data[0].url;
+      const imageRes = await fetch(imageUrl);
+      const arrayBuffer = await imageRes.arrayBuffer();
+      base64Image = Buffer.from(arrayBuffer).toString('base64');
+    }
+
+    // Hazır base64 şəkli frontend-ə göndəririk
+    res.json({ success: true, imageBase64: base64Image });
+
+  } catch (error) {
+    console.error("Xəta:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // --- 7. SERVER LAUNCH (Həm lokal, həm qlobal serverlər üçün uyğun) ---
 const PORT = process.env.PORT || 3000;

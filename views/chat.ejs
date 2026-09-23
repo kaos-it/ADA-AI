@@ -22,7 +22,7 @@
 
      <script async="async" data-cfasync="false" src="https://pl31427557.profitableratecpmnetwork.com/c2b1e42d47356f4b1bfccc63299a1a23/invoke.js"></script>
 
-     <script src="https://pl31471578.profitableratecpmnetwork.com/af/e6/22/afe622a8e673f24563ea9ff5f00b51df.js"></script>
+    
 
 
 <style>
@@ -2048,7 +2048,7 @@ body,
   atOptions = {
     'key' : 'b4aa0de4c99e09f953836c06fc79b41b',
     'format' : 'iframe',
-    'height' : 90,
+    'height' : 60,
     'width' : 728,
     'params' : {}
   };
@@ -5072,6 +5072,119 @@ if (
 
 }
 
+// Əlavə et düyməsinə kliklədikdə fayl seçmə pəncərəsini açırıq
+attachBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Fayl seçildikdə önizləməni göstəririk
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            filePreviewImg.src = event.target.result;
+            filePreviewContainer.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Faylı sil düyməsi
+removeFileBtn.addEventListener('click', () => {
+    selectedFile = null;
+    fileInput.value = '';
+    filePreviewImg.src = '';
+    filePreviewContainer.style.display = 'none';
+});
+
+// Göndər düyməsi və Enter düyməsi
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text && !selectedFile) return;
+
+    // İstifadəçinin mesajını chat-a əlavə edirik
+    appendUserMessage(text, selectedFile ? filePreviewImg.src : null);
+
+    // Backend-ə göndərmək üçün FormData hazırlayırıq (şəkil və mətn dəstəyi üçün)
+    const formData = new FormData();
+    formData.append('prompt', text);
+    if (selectedFile) {
+        formData.append('file', selectedFile);
+    }
+
+    // Inputları təmizləyirik
+    userInput.value = '';
+    removeFileBtn.click();
+
+    try {
+        const response = await fetch('/api/chat-image', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Əgər sistem şəkil yaradıbsa
+            if (data.imageBase64) {
+                appendBotImage(`data:image/png;base64,${data.imageBase64}`);
+            } else if (data.replyText) {
+                appendBotMessage(data.replyText);
+            }
+        } else {
+            appendBotMessage('Xəta baş verdi: ' + data.error);
+        }
+    } catch (err) {
+        appendBotMessage('Serverlə əlaqə kəsildi.');
+    }
+}
+
+function appendUserMessage(text, imgSrc) {
+    let html = `<div class="message user-message" style="margin-bottom: 10px; text-align: right;"><b>Siz:</b> ${text || ''}`;
+    if (imgSrc) {
+        html += `<br><img src="${imgSrc}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;">`;
+    }
+    html += `</div>`;
+    chatMessages.innerHTML += html;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function appendBotImage(imgSrc) {
+    const html = `<div class="message bot-message" style="margin-bottom: 10px;"><b>Bot:</b><br><img src="${imgSrc}" style="max-width: 250px; border-radius: 8px; margin-top: 5px;"></div>`;
+    chatMessages.innerHTML += html;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function appendBotMessage(text) {
+    const html = `<div class="message bot-message" style="margin-bottom: 10px;"><b>Bot:</b> ${text}</div>`;
+    chatMessages.innerHTML += html;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
+// Bot mesajına yükləmə linki əlavə edən funksiya nümunəsi
+function appendBotImageWithDownload(base64Data) {
+    const imageUrl = `data:image/png;base64,${base64Data}`;
+    const html = `
+        <div class="message bot-message" style="margin-bottom: 10px;">
+            <b>Bot:</b><br>
+            <img src="${imageUrl}" style="max-width: 250px; border-radius: 8px; margin-top: 5px;"><br>
+            <a href="${imageUrl}" download="ada-ai-image.png" style="font-size: 12px; color: #3b82f6; text-decoration: underline;">Şəkli yüklə (PNG)</a>
+        </div>
+    `;
+    chatMessages.innerHTML += html;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 
 </script>

@@ -1596,6 +1596,258 @@ body {
             display: none !important;
         }
     }
+
+    /* =========================================================
+   RESPONSIVE REKLAM STİLLƏRİ
+   ========================================================= */
+
+/* Reklam konteynerlərinin ümumi davranışı */
+[id^="container-"],
+.adsbygoogle,
+.chat-header-ad {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header daxilindəki reklam */
+#container-c2b1e42d47356f4b1bfccc63299a1a23 {
+    display: inline-block;
+    max-width: 100%;
+    width: 728px;
+    height: 90px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+/* HighRevenue / iframe reklamları */
+#container-c2b1e42d47356f4b1bfccc63299a1a23 iframe {
+    display: block;
+    max-width: 100%;
+    border: 0;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        width: 468px;
+        height: 60px;
+        margin-left: 12px !important;
+    }
+
+}
+
+
+/* =========================================================
+   MOBİL
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    /* Header reklamının mobil yerləşməsi */
+    #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 60px !important;
+        margin: 8px 0 0 0 !important;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    /* Reklam iframe-i ekranı daşırmasın */
+    #container-c2b1e42d47356f4b1bfccc63299a1a23 iframe {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 60px !important;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Header mobil üçün daha rahat */
+    .chat-header {
+        padding: 10px 12px;
+        min-height: 56px;
+        flex-wrap: wrap;
+    }
+
+    .header-left {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .chat-header h3 {
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    /* Disclaimer */
+    .chat-header .disclaimer {
+        order: 3;
+        width: 100%;
+        margin: 0;
+        padding: 2px 0;
+        text-align: left;
+    }
+
+    /* ADA badge */
+    .model-badge {
+        display: none !important;
+    }
+
+}
+
+
+/* =========================================================
+   ÇOX KİÇİK TELEFONLAR
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 50px !important;
+        margin: 6px 0 0 0 !important;
+    }
+
+    #container-c2b1e42d47356f4b1bfccc63299a1a23 iframe {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 50px !important;
+    }
+
+    .chat-header {
+        padding: 8px 10px;
+    }
+
+}
+
+
+/* =========================================================
+   REKLAMIN SƏHİFƏNİ HORIZONTAL DAŞIRMASININ QARŞISINI AL
+   ========================================================= */
+
+html,
+body,
+.chat-main,
+.chat-header,
+.header-left {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+
+/* Reklam daxilində mümkün böyük elementlər */
+.chat-header iframe,
+.chat-header ins,
+.chat-header div {
+    max-width: 100%;
+}
+
+
+/* =========================================================
+   GOOGLE ADSENSE
+   ========================================================= */
+
+.adsbygoogle {
+    display: block !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   MOBİL REKLAMIN MƏRKƏZDƏ QALMASI
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .chat-header-ad {
+        width: 100%;
+        max-width: 100%;
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+}
+
+.chat-header-ad {
+    width: 728px;
+    max-width: 100%;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-left: 20px;
+}
+
+.chat-header-ad #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+    width: 728px;
+    max-width: 100%;
+    height: 90px;
+    overflow: hidden;
+}
+
+/* Tablet */
+@media (max-width: 1200px) {
+
+    .chat-header-ad {
+        width: 468px;
+        height: 60px;
+        margin-left: 10px;
+    }
+
+    .chat-header-ad #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        width: 468px;
+        height: 60px;
+    }
+
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+
+    .chat-header-ad {
+        width: 100%;
+        max-width: 100%;
+        height: 60px;
+        margin: 6px 0 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .chat-header-ad #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        width: 100%;
+        max-width: 100%;
+        height: 60px;
+    }
+
+}
+
+/* Kiçik telefon */
+@media (max-width: 480px) {
+
+    .chat-header-ad {
+        height: 50px;
+    }
+
+    .chat-header-ad #container-c2b1e42d47356f4b1bfccc63299a1a23 {
+        height: 50px;
+    }
+
+}
 </style>
 
 
@@ -1726,8 +1978,9 @@ body {
                 ADA Aİ səhv edə bilər.məlumatlarınızı yoxlayın.
             </div>
 
-<div id="container-c2b1e42d47356f4b1bfccc63299a1a23"
-     style="display: inline-block; margin-left: 20px; vertical-align: middle;"></div>
+<div class="chat-header-ad">
+    <div id="container-c2b1e42d47356f4b1bfccc63299a1a23"></div>
+</div>
 
      <script>
   atOptions = {

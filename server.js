@@ -160,7 +160,7 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // --- BASE ROUTING ---
-app.get('/', (req, res) => res.redirect('/login'));
+app.get('/', (req, res) => res.redirect('/chat'));
 app.get('/chat', (req, res) => res.render('chat', { user: req.user || null }));
 app.get('/login', (req, res) => req.isAuthenticated() ? res.redirect('/chat') : res.render('login', { errorMessage: null }));
 app.get('/register', (req, res) => req.isAuthenticated() ? res.redirect('/chat') : res.render('register', { errorMessage: null }));
@@ -699,7 +699,7 @@ aydın və faydalı cavab ver.
 
 İstifadəçi hansı dildə yazırsa həmin dildə cavab ver.
 
-ada sozununun ADA Universiteti ilə əlaqəsi yoxdur. ( bu melumat her sefer verme amma lazimi yerde yaz )
+ada sozununun ADA Universiteti ilə əlaqəsi yoxdur bu melumat her sefer verme amma lazimi yerde yaz .
 
 Cari və dəyişən məlumat tələb edən suallarda
 web search imkanından istifadə et.

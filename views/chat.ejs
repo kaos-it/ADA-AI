@@ -21,10 +21,10 @@
 
 
 
-    
 
 
 <style>
+    
     * {
         margin: 0;
         padding: 0;
@@ -1911,7 +1911,10 @@ body,
     }
 
 }
+
 </style>
+
+
 
 
 </head>
@@ -2118,3076 +2121,535 @@ body,
 
         </div>
     </div>
+
 <script>
-/* =========================================================
-   ADA STUDENT AI
-   CHAT + VOICE INPUT + AI TEXT TO SPEECH
-   MOBILE FRIENDLY VERSION
-   ========================================================= */
-
-
-/* =========================================================
-   USER / LOCAL STORAGE
+    /* =========================================================
+   ADA STUDENT AI - CLEAN MOBILE FRIENDLY VERSION
    ========================================================= */
 
 const userEmail = "<%= locals.user ? user.email : 'guest' %>";
+const userPicture = "<%= locals.user && (user.picture || user.profile_picture) ? (user.picture || user.profile_picture) : '' %>";
+
+// Qonaqdırsa sessionStorage (səhifə/tab bağlananda silinir), 
+// login olubsa localStorage (daimi qalır) istifadə edirik.
+const isGuest = !userEmail || userEmail === 'guest';
+const activeStorage = isGuest ? sessionStorage : localStorage;
 
 const STORAGE_KEY = `ada_ai_chats_${userEmail}`;
 const CURRENT_CHAT_KEY = `ada_ai_current_chat_${userEmail}`;
 
+// DOM Elementləri
+const $ = id => document.getElementById(id);
+const textarea = $('userInput');
+const chatMessages = $('chatMessages');
+const sendBtn = $('sendBtn');
+const attachBtn = $('attachBtn');
+const fileInput = $('fileInput');
+const micBtn = $('micBtn');
+const micWrapper = $('micWrapper');
+const langDropdown = $('langDropdown');
+const changeLangBtn = $('changeLangBtn');
+const newChatBtn = $('newChatBtn');
+const chatHistoryList = $('chatHistoryList');
+const filePreviewContainer = $('filePreviewContainer');
+const filePreviewImg = $('filePreviewImg');
+const fileIconPlaceholder = $('fileIconPlaceholder');
+const fileInfoText = $('fileInfoText');
+const removeFileBtn = $('removeFileBtn');
+const sidebar = $('sidebar');
+const menuToggleBtn = $('menuToggleBtn');
+const closeSidebarBtn = $('closeSidebarBtn');
+const sidebarOverlay = $('sidebarOverlay');
+const premiumLessonBtn = $('premiumLessonBtn');
+const adaProBtn = $('adaProBtn');
 
-/* =========================================================
-   DOM ELEMENTS
-   ========================================================= */
-
-const textarea = document.getElementById('userInput');
-const chatMessages = document.getElementById('chatMessages');
-
-const sendBtn = document.getElementById('sendBtn');
-
-const attachBtn = document.getElementById('attachBtn');
-const fileInput = document.getElementById('fileInput');
-
-const micBtn = document.getElementById('micBtn');
-const micWrapper = document.getElementById('micWrapper');
-
-const langDropdown = document.getElementById('langDropdown');
-const changeLangBtn = document.getElementById('changeLangBtn');
-
-const newChatBtn = document.getElementById('newChatBtn');
-const chatHistoryList = document.getElementById('chatHistoryList');
-
-const filePreviewContainer =
-    document.getElementById('filePreviewContainer');
-
-const filePreviewImg =
-    document.getElementById('filePreviewImg');
-
-const fileIconPlaceholder =
-    document.getElementById('fileIconPlaceholder');
-
-const fileInfoText =
-    document.getElementById('fileInfoText');
-
-const removeFileBtn =
-    document.getElementById('removeFileBtn');
-
-const sidebar =
-    document.getElementById('sidebar');
-
-const menuToggleBtn =
-    document.getElementById('menuToggleBtn');
-
-const closeSidebarBtn =
-    document.getElementById('closeSidebarBtn');
-
-const sidebarOverlay =
-    document.getElementById('sidebarOverlay');
-
-const premiumLessonBtn =
-    document.getElementById('premiumLessonBtn');
-
-const adaProBtn =
-    document.getElementById('adaProBtn');
-
-const userPicture =
-    "<%= locals.user && (user.picture || user.profile_picture) ? (user.picture || user.profile_picture) : '' %>";
-
-
-/* =========================================================
-   VARIABLES
-   ========================================================= */
-
+// Dəyişənlər
 let currentChatId = null;
-
 let selectedFile = null;
 let selectedFileBase64 = null;
-
-
-/* =========================================================
-   SPEECH VARIABLES
-   ========================================================= */
-
-let selectedSpeechLang =
-    localStorage.getItem('ada_speech_lang') || 'az-AZ';
-
+let selectedSpeechLang = localStorage.getItem('ada_speech_lang') || 'az-AZ';
 let recognition = null;
-
 let isRecording = false;
-
-
-/* =========================================================
-   TEXT TO SPEECH VARIABLES
-   ========================================================= */
-
 let speechVoices = [];
-
 let activeSpeechButton = null;
-
 let activeUtterance = null;
 
-
-/* =========================================================
-   DEFAULT MESSAGE
-   ========================================================= */
-
 const defaultWelcomeMsg = {
-
-    text:
-        "Salam! Mən ADA Student Aİ köməkçisiyəm. " +
-        "ADA Group tərəfindən dərslərinizə dəstək olmaq üçün yaradılmışam. " +
-        "Dərslərinizin fotosunu və ya səsli mesajınızı mənə ataraq " +
-        "ətraflı izahını ala bilərsiniz!",
-
+    text: "Salam! Mən ADA Student Aİ köməkçisiyəm. ADA Group tərəfindən dərslərinizə dəstək olmaq üçün yaradılmışam. Dərslərinizin fotosunu və ya səsli mesajınızı mənə ataraq ətraflı izahını ala bilərsiniz!",
     sender: "ai"
 };
 
-
-/* =========================================================
-   LANGUAGE OPTIONS
-   ========================================================= */
-
-/*
-   Vacib:
-   Əvvəlki kodda document.querySelectorAll('.lang-option')
-   həm sidebar dil seçimlərini, həm də mikrofon dil seçimlərini
-   götürə bilərdi.
-
-   İndi yalnız mic üçün olan menyunu götürürük.
-*/
-
-const speechLangOptions =
-    document.querySelectorAll('#langDropdown .lang-option');
-
-
-function updateSelectedSpeechLanguageUI() {
-
-    speechLangOptions.forEach(opt => {
-
-        const lang =
-            opt.getAttribute('data-lang');
-
-        if (lang === selectedSpeechLang) {
-
-            opt.classList.add('active-lang');
-
-            if (changeLangBtn) {
-                changeLangBtn.textContent =
-                    opt.textContent.trim();
-            }
-
-        } else {
-
-            opt.classList.remove('active-lang');
-
-        }
-
-    });
-
-}
-
-
-/* =========================================================
-   SPEECH LANGUAGE SELECT
-   ========================================================= */
-
-speechLangOptions.forEach(opt => {
-
-    opt.addEventListener('click', (e) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        speechLangOptions.forEach(o => {
-            o.classList.remove('active-lang');
-        });
-
-        opt.classList.add('active-lang');
-
-        selectedSpeechLang =
-            opt.getAttribute('data-lang') || 'az-AZ';
-
-        localStorage.setItem(
-            'ada_speech_lang',
-            selectedSpeechLang
-        );
-
-        if (recognition) {
-
-            recognition.lang =
-                selectedSpeechLang;
-
-        }
-
-        if (changeLangBtn) {
-
-            changeLangBtn.textContent =
-                opt.textContent.trim();
-
-        }
-
-        if (langDropdown) {
-
-            langDropdown.classList.remove('show');
-
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   LANGUAGE DROPDOWN
-   ========================================================= */
-
-if (changeLangBtn) {
-
-    changeLangBtn.addEventListener('click', (e) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (langDropdown) {
-
-            langDropdown.classList.toggle('show');
-
-        }
-
-    });
-
-}
-
-
-document.addEventListener('click', (e) => {
-
-    if (
-        micWrapper &&
-        !micWrapper.contains(e.target)
-    ) {
-
-        if (langDropdown) {
-
-            langDropdown.classList.remove('show');
-
-        }
-
-    }
-
-});
-
-
-updateSelectedSpeechLanguageUI();
-
-
-/* =========================================================
-   LOCAL STORAGE
-   ========================================================= */
+/* ===================== STORAGE MANAGEMENT ===================== */
 
 function getStoredChats() {
-
     try {
-
-        return JSON.parse(
-            localStorage.getItem(STORAGE_KEY)
-        ) || {};
-
+        return JSON.parse(activeStorage.getItem(STORAGE_KEY)) || {};
     } catch (e) {
-
-        console.error(
-            "LocalStorage oxuma xətası:",
-            e
-        );
-
+        console.error("Storage oxuma xətası:", e);
         return {};
-
     }
-
 }
-
 
 function saveStoredChats(chats) {
-
     try {
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(chats)
-        );
-
+        activeStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
     } catch (e) {
-
-        console.error(
-            "LocalStorage dolub:",
-            e
-        );
-
+        console.error("Storage yaddaş xətası:", e);
     }
-
 }
 
-
-/* =========================================================
-   INIT APP
-   ========================================================= */
+/* ===================== CHAT MANAGEMENT ===================== */
 
 function initApp() {
+    const chats = getStoredChats();
+    let savedCurrentId = activeStorage.getItem(CURRENT_CHAT_KEY);
 
-    const chats =
-        getStoredChats();
-
-    let savedCurrentId =
-        localStorage.getItem(
-            CURRENT_CHAT_KEY
-        );
-
-
-    if (
-        !savedCurrentId ||
-        !chats[savedCurrentId]
-    ) {
-
-        savedCurrentId =
-            createNewChat(false);
-
+    if (!savedCurrentId || !chats[savedCurrentId]) {
+        savedCurrentId = createNewChat(false);
     } else {
-
-        currentChatId =
-            savedCurrentId;
-
+        currentChatId = savedCurrentId;
     }
 
-
     renderSidebarHistory();
-
     loadChat(currentChatId);
-
 }
 
+function createNewChat(shouldRender = true) {
+    const chats = getStoredChats();
+    const newId = 'chat_' + Date.now();
 
-/* =========================================================
-   CREATE NEW CHAT
-   ========================================================= */
-
-function createNewChat(
-    shouldRender = true
-) {
-
-    const chats =
-        getStoredChats();
-
-    const newId =
-        'chat_' + Date.now();
-
-
-    chats[newId] = {
-
-        id: newId,
-
-        title: "Yeni Söhbət",
-
-        messages: [
-            defaultWelcomeMsg
-        ]
-
-    };
-
-
+    chats[newId] = { id: newId, title: "Yeni Söhbət", messages: [defaultWelcomeMsg] };
     saveStoredChats(chats);
-
-    currentChatId =
-        newId;
-
-
-    localStorage.setItem(
-        CURRENT_CHAT_KEY,
-        currentChatId
-    );
-
+    currentChatId = newId;
+    activeStorage.setItem(CURRENT_CHAT_KEY, newId);
 
     if (shouldRender) {
-
         renderSidebarHistory();
-
-        loadChat(currentChatId);
-
+        loadChat(newId);
     }
-
-
     return newId;
-
 }
-
-
-/* =========================================================
-   LOAD CHAT
-   ========================================================= */
 
 function loadChat(chatId) {
-
-    currentChatId =
-        chatId;
-
-    localStorage.setItem(
-        CURRENT_CHAT_KEY,
-        currentChatId
-    );
-
-
-    chatMessages.innerHTML = '';
-
-
-    const chats =
-        getStoredChats();
-
-    const chat =
-        chats[chatId];
-
-
-    if (
-        chat &&
-        chat.messages
-    ) {
-
-        chat.messages.forEach(msg => {
-
-            appendMessageUI(
-                msg.text,
-                msg.sender,
-                msg.isHtml || false,
-                msg.fileBase64
-            );
-
-        });
-
-    }
-
-
-    renderSidebarHistory();
-
-}
-
-
-/* =========================================================
-   SAVE MESSAGE
-   ========================================================= */
-
-function saveMessageToCurrentChat(
-    text,
-    sender,
-    isHtml = false,
-    fileBase64 = null
-) {
-
-    const chats =
-        getStoredChats();
-
-
-    if (!chats[currentChatId]) {
-
-        chats[currentChatId] = {
-
-            id: currentChatId,
-
-            title: "Yeni Söhbət",
-
-            messages: []
-
-        };
-
-    }
-
-
-    chats[currentChatId].messages.push({
-
-        text,
-        sender,
-        isHtml,
-        fileBase64
-
-    });
-
-
-    if (
-        sender === 'user' &&
-        chats[currentChatId].title === "Yeni Söhbət"
-    ) {
-
-        const plainText =
-            text
-                .replace(/<[^>]*>?/gm, '')
-                .trim();
-
-
-        chats[currentChatId].title =
-            plainText.length > 25
-                ? plainText.substring(0, 25) + '...'
-                : (plainText || "Fayl/Şəkil");
-
-    }
-
-
-    saveStoredChats(chats);
-
-    renderSidebarHistory();
-
-}
-
-
-/* =========================================================
-   SIDEBAR HISTORY
-   ========================================================= */
-
-function renderSidebarHistory() {
-
-    const chats =
-        getStoredChats();
-
-
-    chatHistoryList.innerHTML = '';
-
-
-    const chatKeys =
-        Object.keys(chats).reverse();
-
-
-    if (chatKeys.length === 0) {
-
-        chatHistoryList.innerHTML = `
-            <div
-                style="
-                    padding:15px;
-                    font-size:13px;
-                    color:#94a3b8;
-                    text-align:center;
-                "
-            >
-                Hələ heç bir söhbət yoxdur
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    chatKeys.forEach(key => {
-
-        const chat =
-            chats[key];
-
-
-        const item =
-            document.createElement('div');
-
-
-        item.classList.add(
-            'history-item'
-        );
-
-
-        if (key === currentChatId) {
-
-            item.classList.add(
-                'active'
-            );
-
-        }
-
-
-        item.textContent =
-            chat.title || "Yeni Söhbət";
-
-
-        item.addEventListener(
-            'click',
-            () => {
-
-                loadChat(key);
-
-                if (
-                    window.innerWidth <= 768
-                ) {
-
-                    toggleSidebar();
-
-                }
-
-            }
-        );
-
-
-        chatHistoryList.appendChild(item);
-
-    });
-
-}
-
-
-/* =========================================================
-   NEW CHAT
-   ========================================================= */
-
-if (newChatBtn) {
-
-    newChatBtn.addEventListener(
-        'click',
-        () => {
-
-            createNewChat(true);
-
-            if (
-                window.innerWidth <= 768
-            ) {
-
-                toggleSidebar();
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   PROMPT BUTTONS
-   ========================================================= */
-
-function setPromptText(
-    str,
-    btn
-) {
-
-    btn.classList.toggle(
-        'active-glow'
-    );
-
-
-    if (
-        btn.classList.contains(
-            'active-glow'
-        )
-    ) {
-
-        textarea.value =
-            str;
-
-    } else {
-
-        textarea.value =
-            "";
-
-    }
-
-
-    adjustTextareaHeight();
-
-}
-
-
-if (premiumLessonBtn) {
-
-    premiumLessonBtn.addEventListener(
-        'click',
-        () => {
-
-            if (adaProBtn) {
-
-                adaProBtn.classList.remove(
-                    'active-glow'
-                );
-
-            }
-
-
-            setPromptText(
-                "Salam, mən premium dərs seçmək istəyirəm. Hansı istiqamətlər mövcuddur?",
-                premiumLessonBtn
-            );
-
-        }
-    );
-
-}
-
-
-if (adaProBtn) {
-
-    adaProBtn.addEventListener(
-        'click',
-        () => {
-
-            if (premiumLessonBtn) {
-
-                premiumLessonBtn.classList.remove(
-                    'active-glow'
-                );
-
-            }
-
-
-            setPromptText(
-                "Salam, ADA PRO imkanları haqqında məlumat verin.",
-                adaProBtn
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
-function toggleSidebar() {
-
-    if (sidebar) {
-
-        sidebar.classList.toggle(
-            'open'
-        );
-
-    }
-
-
-    if (sidebarOverlay) {
-
-        sidebarOverlay.classList.toggle(
-            'active'
-        );
-
-    }
-
-}
-
-
-if (menuToggleBtn) {
-
-    menuToggleBtn.addEventListener(
-        'click',
-        toggleSidebar
-    );
-
-}
-
-
-if (closeSidebarBtn) {
-
-    closeSidebarBtn.addEventListener(
-        'click',
-        toggleSidebar
-    );
-
-}
-
-
-if (sidebarOverlay) {
-
-    sidebarOverlay.addEventListener(
-        'click',
-        toggleSidebar
-    );
-
-}
-
-
-/* =========================================================
-   TEXTAREA
-   ========================================================= */
-
-function adjustTextareaHeight() {
-
-    if (!textarea) return;
-
-
-    textarea.style.height =
-        'auto';
-
-
-    textarea.style.height =
-        Math.min(
-            textarea.scrollHeight,
-            140
-        ) + 'px';
-
-}
-
-
-if (textarea) {
-
-    textarea.addEventListener(
-        'input',
-        adjustTextareaHeight
-    );
-
-}
-
-
-/* =========================================================
-   CLEAN TEXT FOR SPEECH
-   ========================================================= */
-
-function getCleanSpeechText(
-    html
-) {
-
-    const temp =
-        document.createElement('div');
-
-
-    temp.innerHTML =
-        html || '';
-
-
-    let text =
-        temp.innerText ||
-        temp.textContent ||
-        '';
-
-
-    /*
-       Markdown-dan qalan lazımsız simvolları
-       səs üçün təmizləyirik.
-    */
-
-    text = text
-        .replace(/\*\*/g, '')
-        .replace(/\*/g, '')
-        .replace(/__/g, '')
-        .replace(/_/g, '')
-        .replace(/#{1,6}\s/g, '')
-        .replace(/`/g, '')
-        .replace(/•/g, '')
-        .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-
-    return text;
-
-}
-
-
-/* =========================================================
-   LOAD SPEECH VOICES
-   ========================================================= */
-
-function loadSpeechVoices() {
-
-    if (
-        !('speechSynthesis' in window)
-    ) {
-
-        return;
-
-    }
-
-
-    speechVoices =
-        window.speechSynthesis.getVoices();
-
-}
-
-
-loadSpeechVoices();
-
-
-if (
-    'speechSynthesis' in window
-) {
-
-    window.speechSynthesis.onvoiceschanged =
-        () => {
-
-            loadSpeechVoices();
-
-        };
-
-}
-
-
-/* =========================================================
-   FIND BEST VOICE
-   ========================================================= */
-
-function getBestVoice(
-    language
-) {
-
-    const voices =
-        window.speechSynthesis.getVoices();
-
-
-    if (!voices.length) {
-
-        return null;
-
-    }
-
-
-    const lang =
-        (language || 'az-AZ')
-            .toLowerCase();
-
-
-    /*
-       1. Tam uyğun dil
-    */
-
-    let voice =
-        voices.find(v =>
-            v.lang &&
-            v.lang.toLowerCase() === lang
-        );
-
-
-    if (voice) {
-
-        return voice;
-
-    }
-
-
-    /*
-       2. Dil prefiksi
-    */
-
-    const prefix =
-        lang.split('-')[0];
-
-
-    voice =
-        voices.find(v =>
-            v.lang &&
-            v.lang
-                .toLowerCase()
-                .startsWith(prefix)
-        );
-
-
-    if (voice) {
-
-        return voice;
-
-    }
-
-
-    /*
-       3. Azərbaycan dili üçün Türk dili
-    */
-
-    if (prefix === 'az') {
-
-        voice =
-            voices.find(v =>
-                v.lang &&
-                v.lang
-                    .toLowerCase()
-                    .startsWith('tr')
-            );
-
-
-        if (voice) {
-
-            return voice;
-
-        }
-
-    }
-
-
-    /*
-       4. Azərbaycan dili üçün rus dili
-       son alternativ
-    */
-
-    if (prefix === 'az') {
-
-        voice =
-            voices.find(v =>
-                v.lang &&
-                v.lang
-                    .toLowerCase()
-                    .startsWith('ru')
-            );
-
-
-        if (voice) {
-
-            return voice;
-
-        }
-
-    }
-
-
-    /*
-       5. Heç nə tapılmasa default
-    */
-
-    return voices[0];
-
-}
-
-
-/* =========================================================
-   DETECT LANGUAGE
-   ========================================================= */
-
-function detectLanguage(
-    text
-) {
-
-    if (!text) {
-
-        return 'az-AZ';
-
-    }
-
-
-    /*
-       Rus dili
-    */
-
-    if (
-        /[а-яА-ЯёЁ]/.test(text)
-    ) {
-
-        return 'ru-RU';
-
-    }
-
-
-    /*
-       Ərəb dili
-    */
-
-    if (
-        /[\u0600-\u06FF]/.test(text)
-    ) {
-
-        return 'ar-SA';
-
-    }
-
-
-    /*
-       Azərbaycan dili
-    */
-
-    if (
-        /[əıöüçşğƏİÖÜÇŞĞ]/.test(text)
-    ) {
-
-        return 'az-AZ';
-
-    }
-
-
-    /*
-       Türk dilinə aid simvollar
-    */
-
-    if (
-        /[çğıöşüÇĞİÖŞÜ]/.test(text)
-    ) {
-
-        return 'tr-TR';
-
-    }
-
-
-    /*
-       Default
-    */
-
-    return 'en-US';
-
-}
-
-
-/* =========================================================
-   RESET SPEECH BUTTON
-   ========================================================= */
-
-function resetSpeechButton(
-    button
-) {
-
-    if (!button) return;
-
-
-    button.classList.remove(
-        'speaking'
-    );
-
-
-    const icon =
-        button.querySelector('i');
-
-
-    const span =
-        button.querySelector('span');
-
-
-    if (icon) {
-
-        icon.className =
-            'fa-solid fa-volume-high';
-
-    }
-
-
-    if (span) {
-
-        span.textContent =
-            'Səsləndir';
-
-    }
-
-}
-
-
-/* =========================================================
-   STOP CURRENT SPEECH
-   ========================================================= */
-
-function stopCurrentSpeech() {
-
-    if (
-        'speechSynthesis' in window
-    ) {
-
-        window.speechSynthesis.cancel();
-
-    }
-
-
-    if (activeSpeechButton) {
-
-        resetSpeechButton(
-            activeSpeechButton
-        );
-
-    }
-
-
-    activeSpeechButton =
-        null;
-
-    activeUtterance =
-        null;
-
-}
-
-
-/* =========================================================
-   SPEAK AI TEXT
-   ========================================================= */
-
-function speakAIText(
-    htmlText,
-    button
-) {
-
-    if (
-        !('speechSynthesis' in window)
-    ) {
-
-        alert(
-            'Bu cihazda səsli oxuma funksiyası dəstəklənmir.'
-        );
-
-        return;
-
-    }
-
-
-    /*
-       Eyni düyməyə yenidən basılıbsa
-       səsi dayandır.
-    */
-
-    if (
-        activeSpeechButton === button &&
-        window.speechSynthesis.speaking
-    ) {
-
-        stopCurrentSpeech();
-
-        return;
-
-    }
-
-
-    /*
-       Əvvəlki səsi dayandır.
-    */
+    const chats = getStoredChats();
+    if (!chats[chatId]) return;
 
     stopCurrentSpeech();
-
-
-    const cleanText =
-        getCleanSpeechText(
-            htmlText
-        );
-
-
-    if (!cleanText) {
-
-        return;
-
-    }
-
-
-    /*
-       Mətndən dili avtomatik müəyyən et.
-    */
-
-    const detectedLang =
-        detectLanguage(
-            cleanText
-        );
-
-
-    /*
-       Azərbaycan dili üçün istifadəçinin
-       seçdiyi dili üstün tuturuq.
-    */
-
-    let speechLanguage =
-        detectedLang;
-
-
-    if (
-        detectedLang === 'az-AZ'
-    ) {
-
-        speechLanguage =
-            'az-AZ';
-
-    }
-
-
-    /*
-       Səs seç.
-    */
-
-    const voice =
-        getBestVoice(
-            speechLanguage
-        );
-
-
-    const utterance =
-        new SpeechSynthesisUtterance(
-            cleanText
-        );
-
-
-    /*
-       Səs parametrləri
-    */
-
-    utterance.lang =
-        voice
-            ? voice.lang
-            : speechLanguage;
-
-
-    if (voice) {
-
-        utterance.voice =
-            voice;
-
-    }
-
-
-    /*
-       Telefon üçün daha təbii sürət.
-    */
-
-    utterance.rate =
-        0.88;
-
-
-    utterance.pitch =
-        1.0;
-
-
-    utterance.volume =
-        1.0;
-
-
-    /*
-       Düymə vəziyyəti.
-    */
-
-    activeSpeechButton =
-        button;
-
-    activeUtterance =
-        utterance;
-
-
-    button.classList.add(
-        'speaking'
-    );
-
-
-    const icon =
-        button.querySelector('i');
-
-
-    const span =
-        button.querySelector('span');
-
-
-    if (icon) {
-
-        icon.className =
-            'fa-solid fa-stop';
-
-    }
-
-
-    if (span) {
-
-        span.textContent =
-            'Dayandır';
-
-    }
-
-
-    /*
-       Bitdikdə.
-    */
-
-    utterance.onend =
-        () => {
-
-            resetSpeechButton(
-                button
-            );
-
-            activeSpeechButton =
-                null;
-
-            activeUtterance =
-                null;
-
-        };
-
-
-    /*
-       Xəta olduqda.
-    */
-
-    utterance.onerror =
-        (error) => {
-
-            console.error(
-                'Səs oxuma xətası:',
-                error
-            );
-
-
-            resetSpeechButton(
-                button
-            );
-
-
-            activeSpeechButton =
-                null;
-
-            activeUtterance =
-                null;
-
-        };
-
-
-    /*
-       Bəzi Android Chrome cihazlarında
-       speechSynthesis ilk çağırışda ilişə bilir.
-
-       Ona görə resume + kiçik timeout.
-    */
-
-    try {
-
-        window.speechSynthesis.resume();
-
-    } catch (e) {}
-
-
-    setTimeout(() => {
-
-        try {
-
-            window.speechSynthesis.speak(
-                utterance
-            );
-
-        } catch (error) {
-
-            console.error(
-                'Səsləndirmə başlatma xətası:',
-                error
-            );
-
-            resetSpeechButton(
-                button
-            );
-
-        }
-
-    }, 80);
-
+    currentChatId = chatId;
+    activeStorage.setItem(CURRENT_CHAT_KEY, chatId);
+    chatMessages.innerHTML = '';
+
+    (chats[chatId].messages || []).forEach(msg => {
+        appendMessageUI(msg.text, msg.sender, msg.isHtml || false, msg.fileBase64 || null);
+    });
+
+    renderSidebarHistory();
 }
 
-
-/* =========================================================
-   COPY TEXT
-   ========================================================= */
-
-async function copyAIText(
-    htmlText,
-    button
-) {
-
-    const cleanText =
-        getCleanSpeechText(
-            htmlText
-        );
-
-
-    if (!cleanText) {
-
-        return;
-
+function saveMessageToCurrentChat(text, sender, isHtml = false, fileBase64 = null) {
+    const chats = getStoredChats();
+    if (!chats[currentChatId]) {
+        chats[currentChatId] = { id: currentChatId, title: "Yeni Söhbət", messages: [] };
     }
 
+    const chat = chats[currentChatId];
+    chat.messages.push({ text, sender, isHtml, fileBase64 });
 
+    if (sender === 'user' && chat.title === "Yeni Söhbət") {
+        const plainText = String(text || '').replace(/<[^>]*>?/gm, '').trim();
+        chat.title = plainText ? plainText.substring(0, 25) + (plainText.length > 25 ? '...' : '') : "Fayl/Şəkil";
+    }
+
+    saveStoredChats(chats);
+    renderSidebarHistory();
+}
+
+/* ===================== SIDEBAR ===================== */
+
+function renderSidebarHistory() {
+    if (!chatHistoryList) return;
+    const chats = getStoredChats();
+    chatHistoryList.innerHTML = '';
+
+    const chatKeys = Object.keys(chats).reverse();
+    if (!chatKeys.length) {
+        chatHistoryList.innerHTML = `<div style="padding:15px;text-align:center;color:#94a3b8;font-size:13px">Hələ heç bir söhbət yoxdur</div>`;
+        return;
+    }
+
+    chatKeys.forEach(key => {
+        const chat = chats[key];
+        const item = document.createElement('div');
+        item.className = `history-item ${key === currentChatId ? 'active' : ''}`;
+        item.textContent = chat.title || "Yeni Söhbət";
+
+        item.addEventListener('click', () => {
+            loadChat(key);
+            if (window.innerWidth <= 768) closeSidebar();
+        });
+        chatHistoryList.appendChild(item);
+    });
+}
+
+const openSidebar = () => { sidebar?.classList.add('open'); sidebarOverlay?.classList.add('active'); };
+const closeSidebar = () => { sidebar?.classList.remove('open'); sidebarOverlay?.classList.remove('active'); };
+
+newChatBtn?.addEventListener('click', () => { createNewChat(true); if (window.innerWidth <= 768) closeSidebar(); });
+menuToggleBtn?.addEventListener('click', () => sidebar?.classList.contains('open') ? closeSidebar() : openSidebar());
+closeSidebarBtn?.addEventListener('click', closeSidebar);
+sidebarOverlay?.addEventListener('click', closeSidebar);
+
+/* ===================== PROMPT BUTTONS ===================== */
+
+function setPromptText(str, btn) {
+    if (!btn || !textarea) return;
+    btn.classList.toggle('active-glow');
+    textarea.value = btn.classList.contains('active-glow') ? str : '';
+    adjustTextareaHeight();
+}
+
+premiumLessonBtn?.addEventListener('click', () => {
+    adaProBtn?.classList.remove('active-glow');
+    setPromptText("Salam, mən premium dərs seçmək istəyirəm. Hansı istiqamətlər mövcuddur?", premiumLessonBtn);
+});
+
+adaProBtn?.addEventListener('click', () => {
+    premiumLessonBtn?.classList.remove('active-glow');
+    setPromptText("Salam, ADA PRO imkanları haqqında məlumat verin.", adaProBtn);
+});
+
+/* ===================== TEXTAREA ===================== */
+
+function adjustTextareaHeight() {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+}
+textarea?.addEventListener('input', adjustTextareaHeight);
+
+/* ===================== SPEECH & VOICES ===================== */
+
+const speechLangOptions = document.querySelectorAll('#langDropdown .lang-option');
+
+function updateSelectedSpeechLanguageUI() {
+    speechLangOptions.forEach(opt => {
+        const lang = opt.getAttribute('data-lang');
+        opt.classList.toggle('active-lang', lang === selectedSpeechLang);
+        if (lang === selectedSpeechLang && changeLangBtn) changeLangBtn.textContent = opt.textContent.trim();
+    });
+}
+
+speechLangOptions.forEach(opt => {
+    opt.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        selectedSpeechLang = opt.getAttribute('data-lang') || 'az-AZ';
+        localStorage.setItem('ada_speech_lang', selectedSpeechLang);
+        if (recognition) recognition.lang = selectedSpeechLang;
+        updateSelectedSpeechLanguageUI();
+        langDropdown?.classList.remove('show');
+    });
+});
+
+changeLangBtn?.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); langDropdown?.classList.toggle('show'); });
+document.addEventListener('click', e => { if (micWrapper && !micWrapper.contains(e.target)) langDropdown?.classList.remove('show'); });
+updateSelectedSpeechLanguageUI();
+
+function loadSpeechVoices() {
+    if ('speechSynthesis' in window) speechVoices = window.speechSynthesis.getVoices();
+}
+
+function getBestVoice(language) {
+    const voices = speechVoices.length ? speechVoices : window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    const lang = (language || 'az-AZ').toLowerCase();
+    const prefix = lang.split('-')[0];
+
+    return voices.find(v => v.lang.toLowerCase() === lang) ||
+           voices.find(v => v.lang.toLowerCase().startsWith(prefix)) ||
+           voices.find(v => v.lang.toLowerCase().startsWith(prefix === 'az' ? 'tr' : 'ru')) ||
+           voices[0];
+}
+
+if ('speechSynthesis' in window) {
+    loadSpeechVoices();
+    window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+}
+
+const detectLanguage = text => {
+    if (!text) return 'az-AZ';
+    if (/[\u0600-\u06FF]/.test(text)) return 'ar-SA';
+    if (/[а-яА-ЯёЁ]/.test(text)) return 'ru-RU';
+    if (/[əıöüçşğƏİÖÜÇŞĞ]/.test(text)) return 'az-AZ';
+    if (/[çğıöşüÇĞİÖŞÜ]/.test(text)) return 'tr-TR';
+    return 'en-US';
+};
+
+function getCleanSpeechText(html) {
+    const temp = document.createElement('div');
+    temp.innerHTML = html || '';
+    return (temp.innerText || temp.textContent || '')
+        .replace(/[*_#`•]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/\s+/g, ' ').trim();
+}
+
+/* ===================== TEXT TO SPEECH & COPY ===================== */
+
+function resetSpeechButton(button) {
+    if (!button) return;
+    button.classList.remove('speaking');
+    const icon = button.querySelector('i'), span = button.querySelector('span');
+    if (icon) icon.className = 'fa-solid fa-volume-high';
+    if (span) span.textContent = 'Səsləndir';
+}
+
+function stopCurrentSpeech() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    resetSpeechButton(activeSpeechButton);
+    activeSpeechButton = null;
+    activeUtterance = null;
+}
+
+function speakAIText(htmlText, button) {
+    if (!('speechSynthesis' in window)) return alert('Səsli oxuma dəstəklənmir.');
+    if (activeSpeechButton === button && window.speechSynthesis.speaking) return stopCurrentSpeech();
+    
+    stopCurrentSpeech();
+    const cleanText = getCleanSpeechText(htmlText);
+    if (!cleanText) return;
+
+    const lang = detectLanguage(cleanText);
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = getBestVoice(lang)?.lang || lang;
+    utterance.voice = getBestVoice(lang);
+    utterance.rate = 0.88;
+
+    activeSpeechButton = button;
+    activeUtterance = utterance;
+    button.classList.add('speaking');
+    
+    const icon = button.querySelector('i'), span = button.querySelector('span');
+    if (icon) icon.className = 'fa-solid fa-stop';
+    if (span) span.textContent = 'Dayandır';
+
+    const finish = () => { if (activeUtterance === utterance) { resetSpeechButton(button); activeSpeechButton = null; activeUtterance = null; } };
+    utterance.onend = utterance.onerror = finish;
+    window.speechSynthesis.speak(utterance);
+}
+
+async function copyAIText(htmlText, button) {
+    const cleanText = getCleanSpeechText(htmlText);
+    if (!cleanText) return;
     try {
-
-        if (
-            navigator.clipboard &&
-            window.isSecureContext
-        ) {
-
-            await navigator.clipboard.writeText(
-                cleanText
-            );
-
-        } else {
-
-            const textareaCopy =
-                document.createElement(
-                    'textarea'
-                );
-
-
-            textareaCopy.value =
-                cleanText;
-
-
-            textareaCopy.style.position =
-                'fixed';
-
-            textareaCopy.style.opacity =
-                '0';
-
-            textareaCopy.style.pointerEvents =
-                'none';
-
-
-            document.body.appendChild(
-                textareaCopy
-            );
-
-
-            textareaCopy.focus();
-
-            textareaCopy.select();
-
-
-            document.execCommand(
-                'copy'
-            );
-
-
-            textareaCopy.remove();
-
-        }
-
-
-        button.classList.add(
-            'copied'
-        );
-
-
-        const icon =
-            button.querySelector('i');
-
-
-        const span =
-            button.querySelector('span');
-
-
-        if (icon) {
-
-            icon.className =
-                'fa-solid fa-check';
-
-        }
-
-
-        if (span) {
-
-            span.textContent =
-                'Kopyalandı';
-
-        }
-
-
+        await navigator.clipboard.writeText(cleanText);
+        button.classList.add('copied');
+        const icon = button.querySelector('i'), span = button.querySelector('span');
+        if (icon) icon.className = 'fa-solid fa-check';
+        if (span) span.textContent = 'Kopyalandı';
         setTimeout(() => {
-
-            button.classList.remove(
-                'copied'
-            );
-
-
-            if (icon) {
-
-                icon.className =
-                    'fa-regular fa-copy';
-
-            }
-
-
-            if (span) {
-
-                span.textContent =
-                    'Kopyala';
-
-            }
-
+            button.classList.remove('copied');
+            if (icon) icon.className = 'fa-regular fa-copy';
+            if (span) span.textContent = 'Kopyala';
         }, 1800);
-
-
-    } catch (error) {
-
-        console.error(
-            'Kopyalama xətası:',
-            error
-        );
-
-
-        alert(
-            'Mətni kopyalamaq mümkün olmadı.'
-        );
-
+    } catch (e) {
+        alert('Kopyalamaq mümkün olmadı.');
     }
-
 }
 
+/* ===================== MESSAGE UI ===================== */
 
-/* =========================================================
-   APPEND MESSAGE UI
-   ========================================================= */
+function appendMessageUI(text, sender, isHtml = false, fileBase64 = null) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
 
-function appendMessageUI(
-    text,
-    sender,
-    isHtml = false,
-    fileBase64 = null
-) {
-
-    const messageDiv =
-        document.createElement('div');
-
-
-    messageDiv.classList.add(
-        'message',
-        sender
-    );
-
-
-    const avatarDiv =
-        document.createElement('div');
-
-
-    avatarDiv.classList.add(
-        'avatar'
-    );
-
-
-    /*
-       AI AVATAR
-    */
-
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'avatar';
+    
     if (sender === 'ai') {
-
-        avatarDiv.innerHTML =
-            '<img src="/ada-logo.jpeg" alt="ADA AI">';
-
+        avatarDiv.innerHTML = `<img src="/ada-logo.jpeg" alt="ADA AI">`;
     } else {
-
-        /*
-           USER AVATAR
-        */
-
-        if (userPicture) {
-
-            avatarDiv.innerHTML =
-                `<img src="${userPicture}" alt="User">`;
-
-        } else {
-
-            avatarDiv.innerHTML =
-                '<i class="fa-solid fa-user"></i>';
-
-        }
-
+        avatarDiv.innerHTML = userPicture ? `<img src="${userPicture}" alt="User">` : `<i class="fa-solid fa-user"></i>`;
     }
 
-
-    const contentDiv =
-        document.createElement('div');
-
-
-    contentDiv.classList.add(
-        'message-content'
-    );
-
-
-    /*
-       ======================================================
-       AI MESSAGE
-       ======================================================
-    */
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
 
     if (sender === 'ai') {
+        contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(text || ''), { ADD_ATTR: ['target'] });
+        
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'ai-message-actions';
+        
+        const speakBtn = document.createElement('button');
+        speakBtn.type = 'button';
+        speakBtn.className = 'ai-message-action';
+        speakBtn.innerHTML = `<i class="fa-solid fa-volume-high"></i><span>Səsləndir</span>`;
+        speakBtn.addEventListener('click', () => speakAIText(contentDiv.innerHTML, speakBtn));
 
-        /*
-           Markdown → HTML
-        */
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'ai-message-action';
+        copyBtn.innerHTML = `<i class="fa-regular fa-copy"></i><span>Kopyala</span>`;
+        copyBtn.addEventListener('click', () => copyAIText(contentDiv.innerHTML, copyBtn));
 
-        const parsedMarkdown =
-            marked.parse(
-                text || ''
-            );
-
-
-        /*
-           XSS təhlükəsizliyi
-        */
-
-        const sanitizedHtml =
-            DOMPurify.sanitize(
-                parsedMarkdown,
-                {
-                    ADD_ATTR: ['target']
-                }
-            );
-
-
-        contentDiv.innerHTML =
-            sanitizedHtml;
-
-
-        /*
-           AI BUTTONS
-        */
-
-        const actionsDiv =
-            document.createElement(
-                'div'
-            );
-
-
-        actionsDiv.classList.add(
-            'ai-message-actions'
-        );
-
-
-        /*
-           SPEAK BUTTON
-        */
-
-        const speakBtn =
-            document.createElement(
-                'button'
-            );
-
-
-        speakBtn.type =
-            'button';
-
-
-        speakBtn.classList.add(
-            'ai-message-action'
-        );
-
-
-        speakBtn.innerHTML = `
-            <i class="fa-solid fa-volume-high"></i>
-            <span>Səsləndir</span>
-        `;
-
-
-        speakBtn.addEventListener(
-            'click',
-            () => {
-
-                speakAIText(
-                    sanitizedHtml,
-                    speakBtn
-                );
-
-            }
-        );
-
-
-        /*
-           COPY BUTTON
-        */
-
-        const copyBtn =
-            document.createElement(
-                'button'
-            );
-
-
-        copyBtn.type =
-            'button';
-
-
-        copyBtn.classList.add(
-            'ai-message-action'
-        );
-
-
-        copyBtn.innerHTML = `
-            <i class="fa-regular fa-copy"></i>
-            <span>Kopyala</span>
-        `;
-
-
-        copyBtn.addEventListener(
-            'click',
-            () => {
-
-                copyAIText(
-                    sanitizedHtml,
-                    copyBtn
-                );
-
-            }
-        );
-
-
-        /*
-           BUTTONS ADD
-        */
-
-        actionsDiv.appendChild(
-            speakBtn
-        );
-
-
-        actionsDiv.appendChild(
-            copyBtn
-        );
-
-
-        contentDiv.appendChild(
-            actionsDiv
-        );
-
-    }
-
-
-    /*
-       ======================================================
-       USER MESSAGE
-       ======================================================
-    */
-
-    else {
-
-        /*
-           Uploaded image
-        */
-
-        if (fileBase64) {
-
-            const img =
-                document.createElement(
-                    'img'
-                );
-
-
-            img.src =
-                fileBase64;
-
-
-            img.classList.add(
-                'uploaded-img'
-            );
-
-
-            contentDiv.appendChild(
-                img
-            );
-
-        }
-
-
-        /*
-           User text
-        */
-
+        actionsDiv.append(speakBtn, copyBtn);
+        contentDiv.appendChild(actionsDiv);
+    } else {
+        if (fileBase64) contentDiv.innerHTML += `<img src="${fileBase64}" class="uploaded-img">`;
         if (text) {
-
-            const textContainer =
-                document.createElement(
-                    'div'
-                );
-
-
-            textContainer.textContent =
-                text;
-
-
-            contentDiv.appendChild(
-                textContainer
-            );
-
+            const textContainer = document.createElement('div');
+            textContainer.textContent = text;
+            contentDiv.appendChild(textContainer);
         }
-
     }
 
-
-    messageDiv.appendChild(
-        avatarDiv
-    );
-
-
-    messageDiv.appendChild(
-        contentDiv
-    );
-
-
-    chatMessages.appendChild(
-        messageDiv
-    );
-
-
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
-
+    messageDiv.append(avatarDiv, contentDiv);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+/* ===================== FILE UPLOAD ===================== */
 
-/* =========================================================
-   FILE UPLOAD
-   ========================================================= */
+attachBtn?.addEventListener('click', () => fileInput?.click());
+fileInput?.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    selectedFile = file;
 
-if (attachBtn) {
-
-    attachBtn.addEventListener(
-        'click',
-        () => {
-
-            fileInput.click();
-
+    const reader = new FileReader();
+    reader.onload = event => {
+        selectedFileBase64 = event.target.result;
+        if (file.type.startsWith('image/')) {
+            filePreviewImg.src = selectedFileBase64;
+            filePreviewImg.style.display = 'block';
+            fileIconPlaceholder.style.display = 'none';
+        } else {
+            filePreviewImg.style.display = 'none';
+            fileIconPlaceholder.style.display = 'flex';
         }
-    );
+        fileInfoText.textContent = file.name;
+        filePreviewContainer.classList.add('active');
+    };
+    reader.readAsDataURL(file);
+});
 
+removeFileBtn?.addEventListener('click', () => {
+    selectedFile = null;
+    selectedFileBase64 = null;
+    if (fileInput) fileInput.value = '';
+    filePreviewImg?.removeAttribute('src');
+    filePreviewContainer?.classList.remove('active');
+});
+
+/* ===================== SPEECH RECOGNITION ===================== */
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = selectedSpeechLang;
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => { isRecording = true; micBtn?.classList.add('listening'); };
+    recognition.onresult = event => {
+        let text = Array.from(event.results).map(r => r[0].transcript).join('');
+        if (text && textarea) { textarea.value = text; adjustTextareaHeight(); }
+        if (event.results[0].isFinal) handleSendMessage();
+    };
+    recognition.onerror = recognition.onend = () => { isRecording = false; micBtn?.classList.remove('listening'); };
 }
 
-
-if (fileInput) {
-
-    fileInput.addEventListener(
-        'change',
-        (e) => {
-
-            const file =
-                e.target.files[0];
-
-
-            if (!file) return;
-
-
-            selectedFile =
-                file;
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                function(uploadEvent) {
-
-                    selectedFileBase64 =
-                        uploadEvent.target.result;
-
-
-                    if (
-                        file.type.startsWith(
-                            'image/'
-                        )
-                    ) {
-
-                        filePreviewImg.src =
-                            selectedFileBase64;
-
-
-                        filePreviewImg.style.display =
-                            'block';
-
-
-                        fileIconPlaceholder.style.display =
-                            'none';
-
-                    } else {
-
-                        filePreviewImg.style.display =
-                            'none';
-
-
-                        fileIconPlaceholder.style.display =
-                            'flex';
-
-                    }
-
-
-                    fileInfoText.textContent =
-                        file.name;
-
-
-                    filePreviewContainer.classList.add(
-                        'active'
-                    );
-
-                };
-
-
-            reader.readAsDataURL(
-                file
-            );
-
-        }
-    );
-
-}
-
-
-if (removeFileBtn) {
-
-    removeFileBtn.addEventListener(
-        'click',
-        () => {
-
-            selectedFile = null;
-
-            selectedFileBase64 = null;
-
-            fileInput.value = '';
-
-            filePreviewContainer.classList.remove(
-                'active'
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   MICROPHONE / SPEECH RECOGNITION
-   ========================================================= */
-
-function updateMicStyle(
-    active
-) {
-
-    if (!micBtn) return;
-
-
-    if (active) {
-
-        micBtn.style.backgroundColor =
-            '#1e3a8a';
-
-        micBtn.style.transform =
-            'scale(1.15)';
-
-        micBtn.style.transition =
-            'all 0.25s ease';
-
-    } else {
-
-        micBtn.style.backgroundColor =
-            '';
-
-        micBtn.style.transform =
-            'scale(1)';
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE SPEECH RECOGNITION
-   ========================================================= */
-
-if (
-    'SpeechRecognition' in window ||
-    'webkitSpeechRecognition' in window
-) {
-
-    const SpeechRecognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
-
-
-    recognition =
-        new SpeechRecognition();
-
-
-    recognition.lang =
-        selectedSpeechLang;
-
-
-    /*
-       Mobil üçün
-    */
-
-    recognition.continuous =
-        false;
-
-
-    recognition.interimResults =
-        true;
-
-
-    recognition.maxAlternatives =
-        1;
-
-
-    recognition.onstart =
-        () => {
-
-            isRecording =
-                true;
-
-
-            if (micBtn) {
-
-                micBtn.classList.add(
-                    'listening'
-                );
-
-            }
-
-
-            updateMicStyle(
-                true
-            );
-
-        };
-
-
-    recognition.onresult =
-        (event) => {
-
-            let finalText =
-                '';
-
-
-            let interimText =
-                '';
-
-
-            /*
-               Bütün nəticələri götürürük.
-               Əvvəlki kodda yalnız event.results[0]
-               istifadə edilirdi.
-            */
-
-            for (
-                let i = event.resultIndex;
-                i < event.results.length;
-                i++
-            ) {
-
-                const transcript =
-                    event.results[i][0].transcript;
-
-
-                if (
-                    event.results[i].isFinal
-                ) {
-
-                    finalText +=
-                        transcript + ' ';
-
-                } else {
-
-                    interimText +=
-                        transcript;
-
-                }
-
-            }
-
-
-            const currentText =
-                (
-                    finalText ||
-                    interimText
-                ).trim();
-
-
-            if (currentText) {
-
-                textarea.value =
-                    currentText;
-
-
-                adjustTextareaHeight();
-
-            }
-
-
-            /*
-               Final nəticə gəldikdə göndər.
-            */
-
-            if (finalText.trim()) {
-
-                setTimeout(() => {
-
-                    handleSendMessage();
-
-                }, 250);
-
-            }
-
-        };
-
-
-    recognition.onerror =
-        (event) => {
-
-            console.error(
-                'Səs tanıma xətası:',
-                event.error
-            );
-
-
-            isRecording =
-                false;
-
-
-            if (micBtn) {
-
-                micBtn.classList.remove(
-                    'listening'
-                );
-
-            }
-
-
-            updateMicStyle(
-                false
-            );
-
-
-            /*
-               Bəzi normal mobil xətalarda
-               istifadəçiyə alert göstərmirik.
-            */
-
-            if (
-                event.error === 'not-allowed'
-            ) {
-
-                alert(
-                    'Mikrofon icazəsi verilməyib. Telefonunuzun brauzer ayarlarından mikrofon icazəsini aktiv edin.'
-                );
-
-            }
-
-        };
-
-
-    recognition.onend =
-        () => {
-
-            isRecording =
-                false;
-
-
-            if (micBtn) {
-
-                micBtn.classList.remove(
-                    'listening'
-                );
-
-            }
-
-
-            updateMicStyle(
-                false
-            );
-
-        };
-
-}
-
-
-/* =========================================================
-   START RECOGNITION
-   ========================================================= */
-
-function startRecognition() {
-
-    if (!recognition) {
-
-        return;
-
-    }
-
-
-    recognition.lang =
-        selectedSpeechLang;
-
-
-    try {
-
-        recognition.start();
-
-    } catch (error) {
-
-        console.log(
-            'Recognition artıq aktiv ola bilər.'
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   MICROPHONE BUTTON
-   ========================================================= */
-
-if (micBtn) {
-
-    micBtn.addEventListener(
-        'click',
-        (e) => {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-
-            if (!recognition) {
-
-                alert(
-                    'Bu brauzer səs tanımanı dəstəkləmir. Android-də Chrome istifadə etməyiniz tövsiyə olunur.'
-                );
-
-                return;
-
-            }
-
-
-            if (isRecording) {
-
-                recognition.stop();
-
-                return;
-
-            }
-
-
-            startRecognition();
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SEND MESSAGE
-   ========================================================= */
+micBtn?.addEventListener('click', e => {
+    e.preventDefault();
+    if (!recognition) return alert('Səs tanıma dəstəklənmir.');
+    isRecording ? recognition.stop() : recognition.start();
+});
+
+/* ===================== SEND MESSAGE ===================== */
 
 async function handleSendMessage() {
+    const text = textarea.value.trim();
+    if (!text && !selectedFileBase64) return;
 
-    const text =
-        textarea.value.trim();
+    const payloadMsg = text, payloadImg = selectedFileBase64;
+    stopCurrentSpeech();
 
+    appendMessageUI(text, 'user', false, payloadImg);
+    saveMessageToCurrentChat(text, 'user', false, payloadImg);
 
-    if (
-        !text &&
-        !selectedFileBase64
-    ) {
-
-        return;
-
-    }
-
-
-    const payloadMessage =
-        text;
-
-
-    const payloadImage =
-        selectedFileBase64;
-
-
-    /*
-       User message
-    */
-
-    appendMessageUI(
-        text,
-        'user',
-        false,
-        payloadImage
-    );
-
-
-    saveMessageToCurrentChat(
-        text,
-        'user',
-        false,
-        payloadImage
-    );
-
-
-    /*
-       Prompt buttons
-    */
-
-    if (premiumLessonBtn) {
-
-        premiumLessonBtn.classList.remove(
-            'active-glow'
-        );
-
-    }
-
-
-    if (adaProBtn) {
-
-        adaProBtn.classList.remove(
-            'active-glow'
-        );
-
-    }
-
-
-    /*
-       Input təmizlə
-    */
-
+    premiumLessonBtn?.classList.remove('active-glow');
+    adaProBtn?.classList.remove('active-glow');
     textarea.value = '';
-
     adjustTextareaHeight();
+    selectedFile = selectedFileBase64 = null;
+    if (fileInput) fileInput.value = '';
+    filePreviewContainer?.classList.remove('active');
 
-
-    selectedFile = null;
-
-    selectedFileBase64 = null;
-
-    fileInput.value = '';
-
-
-    if (filePreviewContainer) {
-
-        filePreviewContainer.classList.remove(
-            'active'
-        );
-
-    }
-
-
-    /*
-       Loading
-    */
-
-    const loadingId =
-        'loading-' + Date.now();
-
-
-    const loadingDiv =
-        document.createElement(
-            'div'
-        );
-
-
-    loadingDiv.classList.add(
-        'message',
-        'ai'
-    );
-
-
-    loadingDiv.id =
-        loadingId;
-
-
-    loadingDiv.innerHTML = `
-        <div class="avatar">
-            <img
-                src="/ada-logo.jpeg"
-                alt="ADA AI"
-            >
-        </div>
-
-        <div
-            class="message-content"
-            style="
-                color:#94a3b8;
-                font-style:italic;
-            "
-        >
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Fikirləşirəm səbirli ol...
-        </div>
-    `;
-
-
-    chatMessages.appendChild(
-        loadingDiv
-    );
-
-
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
-
+    const loadingId = 'loading-' + Date.now();
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'message ai';
+    loadingDiv.id = loadingId;
+    loadingDiv.innerHTML = `<div class="avatar"><img src="/ada-logo.jpeg"></div><div class="message-content" style="color:#94a3b8;font-style:italic"><i class="fa-solid fa-spinner fa-spin"></i> Fikirləşirəm...</div>`;
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 
     try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: payloadMsg, image: payloadImg })
+        });
+        const data = await res.json();
+        loadingDiv.remove();
 
-        const response =
-            await fetch(
-                '/api/chat',
-                {
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
-
-                    body: JSON.stringify({
-
-                        message:
-                            payloadMessage,
-
-                        image:
-                            payloadImage
-
-                    })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        const loader =
-            document.getElementById(
-                loadingId
-            );
-
-
-        if (loader) {
-
-            loader.remove();
-
-        }
-
-        
-
-
-        if (response.ok) {
-
-            /*
-               AI cavabı göstər
-            */
-
-            appendMessageUI(
-                data.reply,
-                'ai'
-            );
-
-
-            /*
-               LocalStorage
-            */
-
-            saveMessageToCurrentChat(
-                data.reply,
-                'ai',
-                false
-            );
-
-
-            /*
-               VACİB:
-               Burada artıq avtomatik speakResponse()
-               YOXDUR.
-
-               İstifadəçi 🔊 Səsləndir düyməsinə basır.
-            */
-
-        } else {
-
-            const err =
-                data.error ||
-                "Xəta baş verdi.";
-
-
-            appendMessageUI(
-                err,
-                'ai'
-            );
-
-
-            saveMessageToCurrentChat(
-                err,
-                'ai',
-                false
-            );
-
-        }
-
-
-    } catch (error) {
-
-        const loader =
-            document.getElementById(
-                loadingId
-            );
-
-
-        if (loader) {
-
-            loader.remove();
-
-        }
-
-
-        console.error(
-            "Xəta:",
-            error
-        );
-
-
-        const networkErr =
-            "Serverlə əlaqə zamanı xəta baş verdi.";
-
-
-        appendMessageUI(
-            networkErr,
-            'ai'
-        );
-
-
-        saveMessageToCurrentChat(
-            networkErr,
-            'ai',
-            false
-        );
-
+        const reply = res.ok ? (data.reply || 'Cavab boşdur.') : (data.error || 'Xəta baş verdi.');
+        appendMessageUI(reply, 'ai');
+        saveMessageToCurrentChat(reply, 'ai');
+    } catch (e) {
+        loadingDiv.remove();
+        appendMessageUI('Serverlə əlaqə xətası.', 'ai');
     }
-
 }
 
+sendBtn?.addEventListener('click', handleSendMessage);
+textarea?.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
 
-/* =========================================================
-   SEND BUTTON
-   ========================================================= */
+/* ===================== SETTINGS & INIT ===================== */
 
-if (sendBtn) {
+function initSettings() {
+    const settingsToggleBtn = $('settingsToggleBtn'), settingsMenu = $('settingsMenu'), themeToggleItem = $('themeToggleItem');
+    settingsToggleBtn?.addEventListener('click', e => { e.stopPropagation(); settingsMenu?.classList.toggle('active'); });
+    document.addEventListener('click', () => settingsMenu?.classList.remove('active'));
 
-    sendBtn.addEventListener(
-        'click',
-        handleSendMessage
-    );
+    if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 
+    const updateTheme = () => {
+        if (!themeToggleItem) return;
+        const isLight = document.body.classList.contains('light-mode');
+        themeToggleItem.innerHTML = `<i class="fa-solid ${isLight ? 'fa-sun' : 'fa-moon'}"></i><span>Qaranlıq / Açıq Mod</span>`;
+    };
+    updateTheme();
+
+    themeToggleItem?.addEventListener('click', e => {
+        e.preventDefault();
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        updateTheme();
+    });
 }
 
-
-/* =========================================================
-   ENTER TO SEND
-   ========================================================= */
-
-if (textarea) {
-
-    textarea.addEventListener(
-        'keydown',
-        (e) => {
-
-            if (
-                e.key === 'Enter' &&
-                !e.shiftKey
-            ) {
-
-                e.preventDefault();
-
-                handleSendMessage();
-
-            }
-
-        }
-    );
-
+function initMainLanguageDropdown() {
+    const dropdown = $('languageDropdown'), toggleBtn = $('langToggleBtn');
+    if (!dropdown || !toggleBtn) return;
+    toggleBtn.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('active'); });
+    document.addEventListener('click', e => { if (!dropdown.contains(e.target)) dropdown.classList.remove('active'); });
 }
-
-
-/* =========================================================
-   MOBILE KEYBOARD
-   ========================================================= */
-
-if (textarea) {
-
-    textarea.addEventListener(
-        'blur',
-        () => {
-
-            setTimeout(() => {
-
-                window.scrollTo(
-                    0,
-                    document.body.scrollHeight
-                );
-
-
-                chatMessages.scrollTop =
-                    chatMessages.scrollHeight;
-
-
-                document.body.style.height =
-                    window.innerHeight + 'px';
-
-
-                setTimeout(() => {
-
-                    document.body.style.height =
-                        '';
-
-                }, 50);
-
-            }, 150);
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   MOBILE RESIZE
-   ========================================================= */
-
-window.addEventListener(
-    'resize',
-    () => {
-
-        if (
-            document.activeElement !== textarea
-        ) {
-
-            chatMessages.scrollTop =
-                chatMessages.scrollHeight;
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   SETTINGS / THEME
-   ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        const settingsToggleBtn =
-            document.getElementById(
-                "settingsToggleBtn"
-            );
-
-
-        const settingsMenu =
-            document.getElementById(
-                "settingsMenu"
-            );
-
-
-        const themeToggleItem =
-            document.getElementById(
-                "themeToggleItem"
-            );
-
-
-        if (
-            settingsToggleBtn &&
-            settingsMenu
-        ) {
-
-            settingsToggleBtn.addEventListener(
-                "click",
-                (e) => {
-
-                    e.stopPropagation();
-
-                    settingsMenu.classList.toggle(
-                        "active"
-                    );
-
-                }
-            );
-
-
-            document.addEventListener(
-                "click",
-                () => {
-
-                    settingsMenu.classList.remove(
-                        "active"
-                    );
-
-                }
-            );
-
-        }
-
-
-        const currentTheme =
-            localStorage.getItem(
-                "theme"
-            );
-
-
-        if (
-            currentTheme === "light"
-        ) {
-
-            document.body.classList.add(
-                "light-mode"
-            );
-
-
-            if (themeToggleItem) {
-
-                themeToggleItem.innerHTML =
-                    '<i class="fa-solid fa-sun"></i><span>Qaranlıq / Açıq Mod</span>';
-
-            }
-
-        }
-
-
-        if (themeToggleItem) {
-
-            themeToggleItem.addEventListener(
-                "click",
-                (e) => {
-
-                    e.preventDefault();
-
-
-                    document.body.classList.toggle(
-                        "light-mode"
-                    );
-
-
-                    let theme =
-                        "dark";
-
-
-                    if (
-                        document.body.classList.contains(
-                            "light-mode"
-                        )
-                    ) {
-
-                        theme =
-                            "light";
-
-
-                        themeToggleItem.innerHTML =
-                            '<i class="fa-solid fa-sun"></i><span>Qaranlıq / Açıq Mod</span>';
-
-                    } else {
-
-                        themeToggleItem.innerHTML =
-                            '<i class="fa-solid fa-moon"></i><span>Qaranlıq / Açıq Mod</span>';
-
-                    }
-
-
-                    localStorage.setItem(
-                        "theme",
-                        theme
-                    );
-
-                }
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   MAIN LANGUAGE DROPDOWN
-   ========================================================= */
-
-document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-
-        const mainLanguageDropdown =
-            document.getElementById(
-                'languageDropdown'
-            );
-
-
-        const langToggleBtn =
-            document.getElementById(
-                'langToggleBtn'
-            );
-
-
-        if (
-            !mainLanguageDropdown ||
-            !langToggleBtn
-        ) {
-
-            return;
-
-        }
-
-
-        langToggleBtn.addEventListener(
-            'click',
-            (e) => {
-
-                e.stopPropagation();
-
-                mainLanguageDropdown.classList.toggle(
-                    'active'
-                );
-
-            }
-        );
-
-
-        document.addEventListener(
-            'click',
-            (e) => {
-
-                if (
-                    !mainLanguageDropdown.contains(
-                        e.target
-                    )
-                ) {
-
-                    mainLanguageDropdown.classList.remove(
-                        'active'
-                    );
-
-                }
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
 
 initApp();
-
-
-/* =========================================================
-   MOBILE SPEECH SYNTHESIS FIX
-   ========================================================= */
-
-/*
-   Android Chrome bəzən səhifə yüklənəndə
-   voice siyahısını dərhal vermir.
-*/
-
-if (
-    'speechSynthesis' in window
-) {
-
-    setTimeout(() => {
-
-        try {
-
-            window.speechSynthesis.getVoices();
-
-        } catch (e) {}
-
-    }, 300);
-
-
-    setTimeout(() => {
-
-        try {
-
-            window.speechSynthesis.getVoices();
-
-        } catch (e) {}
-
-    }, 1000);
-
-}
-
-// Əlavə et düyməsinə kliklədikdə fayl seçmə pəncərəsini açırıq
-attachBtn.addEventListener('click', () => {
-    fileInput.click();
-});
-
-// Fayl seçildikdə önizləməni göstəririk
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            filePreviewImg.src = event.target.result;
-            filePreviewContainer.style.display = 'flex';
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Faylı sil düyməsi
-removeFileBtn.addEventListener('click', () => {
-    selectedFile = null;
-    fileInput.value = '';
-    filePreviewImg.src = '';
-    filePreviewContainer.style.display = 'none';
-});
-
-// Göndər düyməsi və Enter düyməsi
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-    }
-});
-
-async function sendMessage() {
-    const text = userInput.value.trim();
-    if (!text && !selectedFile) return;
-
-    // İstifadəçinin mesajını chat-a əlavə edirik
-    appendUserMessage(text, selectedFile ? filePreviewImg.src : null);
-
-    // Backend-ə göndərmək üçün FormData hazırlayırıq (şəkil və mətn dəstəyi üçün)
-    const formData = new FormData();
-    formData.append('prompt', text);
-    if (selectedFile) {
-        formData.append('file', selectedFile);
-    }
-
-    // Inputları təmizləyirik
-    userInput.value = '';
-    removeFileBtn.click();
-
-    try {
-        const response = await fetch('/api/chat-image', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Əgər sistem şəkil yaradıbsa
-            if (data.imageBase64) {
-                appendBotImage(`data:image/png;base64,${data.imageBase64}`);
-            } else if (data.replyText) {
-                appendBotMessage(data.replyText);
-            }
-        } else {
-            appendBotMessage('Xəta baş verdi: ' + data.error);
-        }
-    } catch (err) {
-        appendBotMessage('Serverlə əlaqə kəsildi.');
-    }
-}
-
-function appendUserMessage(text, imgSrc) {
-    let html = `<div class="message user-message" style="margin-bottom: 10px; text-align: right;"><b>Siz:</b> ${text || ''}`;
-    if (imgSrc) {
-        html += `<br><img src="${imgSrc}" style="max-width: 150px; border-radius: 8px; margin-top: 5px;">`;
-    }
-    html += `</div>`;
-    chatMessages.innerHTML += html;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function appendBotImage(imgSrc) {
-    const html = `<div class="message bot-message" style="margin-bottom: 10px;"><b>Bot:</b><br><img src="${imgSrc}" style="max-width: 250px; border-radius: 8px; margin-top: 5px;"></div>`;
-    chatMessages.innerHTML += html;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function appendBotMessage(text) {
-    const html = `<div class="message bot-message" style="margin-bottom: 10px;"><b>Bot:</b> ${text}</div>`;
-    chatMessages.innerHTML += html;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-
-// Bot mesajına yükləmə linki əlavə edən funksiya nümunəsi
-function appendBotImageWithDownload(base64Data) {
-    const imageUrl = `data:image/png;base64,${base64Data}`;
-    const html = `
-        <div class="message bot-message" style="margin-bottom: 10px;">
-            <b>Bot:</b><br>
-            <img src="${imageUrl}" style="max-width: 250px; border-radius: 8px; margin-top: 5px;"><br>
-            <a href="${imageUrl}" download="ada-ai-image.png" style="font-size: 12px; color: #3b82f6; text-decoration: underline;">Şəkli yüklə (PNG)</a>
-        </div>
-    `;
-    chatMessages.innerHTML += html;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-
+initSettings();
+initMainLanguageDropdown();
+loadSpeechVoices();
+setTimeout(loadSpeechVoices, 500);
 </script>
-
 
 </body>
 </html>

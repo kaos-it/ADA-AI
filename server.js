@@ -5,96 +5,98 @@ import bcrypt from 'bcrypt';
 import session from 'express-session';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import Replicate from 'replicate';
 import nodemailer from 'nodemailer';
 import sharp from 'sharp';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
-import multer from 'multer'
+import OpenAI, { toFile } from 'openai';
+import multer from 'multer';
 import cors from 'cors';
-dotenv.config();
-import { franc } from 'franc';
 import { PrismaClient } from '@prisma/client';
+
+// ============================================================================
+// CONFIGURATION & ENVIRONMENT SETUP
+// ============================================================================
+dotenv.config({ override: true });
 
 const prisma = new PrismaClient();
 const app = express();
+const upload = multer({ storage: multer.memoryStorage() });
 
+// --- MIDDLEWARES ---
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
-
-const upload = multer({ storage: multer.memoryStorage() });
-
-app.use(session({
-    secret: process.env.SESSION_SECRET, // Birbaşa .env-dən oxuyur
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Dil təyini funksiyası
-const detectLanguage = (text) => {
-    if (!text) return 'az';
-    if (/[а-яА-ЯёЁ]/.test(text)) return 'ru';
-    if (/[əıöğşçƏIÖĞŞÇ]/.test(text)) return 'az';
-    if (/[ıöğşçİÖĞŞÇ]/.test(text)) return 'tr';
-    
-    // İngilis dilində tez-tez işlənən sözlər
-    const englishWords = ['hello', 'hi', 'how', 'what', 'is', 'the', 'can', 'you', 'please', 'help'];
-    const lowerText = text.toLowerCase();
-    const isEnglish = englishWords.some(word => lowerText.split(/\s+/).includes(word));
-    
-    if (isEnglish) return 'en';
-
-    const langCode = franc(text);
-    return langCode === 'aze' ? 'az' : 'en';
-};
-
-const replicate = new Replicate({
-    auth: process.env.REPLICATE_API_TOKEN,
-});
-
-// --- OpenAI İntegrasiyası ---
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
-
-// --- Session & Passport Ayarları ---
+// ============================================================================
+// SESSION & PASSPORT CONFIGURATION
+// ============================================================================
+app.set('trust proxy', 1);
 app.use(session({
     secret: process.env.SESSION_SECRET || 'ada-ai-fallback-secret-key',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production'
+        secure: false // Lokal testlər və HTTP/HTTPS uyğunluğu üçün
     }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Global user middleware
 app.use((req, res, next) => {
     res.locals.user = req.user || null;
     next();
 });
 
-// --- Database Bağlantısı ---
+// ============================================================================
+// EXTERNAL SERVICES SETUP (OPENAI & DATABASE & MAILER)
+// ============================================================================
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
+
+// --- DATABASE CONNECTION POOL ---
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false }
 });
 
 pool.connect()
-    .then(() => console.log('Verilənlər bazasına uğurla qoşuldu!'))
-    .catch(err => console.error('Baza bağlantısı xətası:', err.message));
+    .then(() => {
+        console.log('✅ Verilənlər bazasına uğurla qoşuldu!');
+    })
+    .catch(err => {
+        console.error('❌ Baza bağlantısı xətası:', err.message);
+    });
 
-// --- Auth Middlewares ---
+// --- NODEMAILER TRANSPORTER ---
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER || process.env.EMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS
+    }
+});
+
+transporter.verify((error) => {
+    if (error) {
+        console.error('❌ Gmail bağlantısı uğursuz oldu:', error.message);
+    } else {
+        console.log('✅ Gmail SMTP bağlantısı hazırdır.');
+    }
+});
+
+// ============================================================================
+// AUTHENTICATION MIDDLEWARES & STRATEGIES
+// ============================================================================
 function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) return next();
+    if (req.isAuthenticated()) {
+        return next();
+    }
     if (req.path.startsWith('/api/')) {
         return res.status(401).json({ error: "Sessiyanızın vaxtı bitib. Zəhmət olmasa daxil olun." });
     }
@@ -102,7 +104,9 @@ function ensureAuthenticated(req, res, next) {
 }
 
 async function ensureAdmin(req, res, next) {
-    if (!req.isAuthenticated()) return res.redirect('/login');
+    if (!req.isAuthenticated()) {
+        return res.redirect('/login');
+    }
     try {
         const userResult = await pool.query('SELECT is_admin FROM users WHERE id = $1', [req.user.id]);
         if (userResult.rows.length > 0 && userResult.rows[0].is_admin) {
@@ -116,7 +120,7 @@ async function ensureAdmin(req, res, next) {
     }
 }
 
-// --- Passport Google OAuth Strategy ---
+// --- PASSPORT GOOGLE OAUTH STRATEGY ---
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -124,7 +128,9 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-        if (!email) return done(new Error("Google hesabında e-poçt tapılmadı!"), null);
+        if (!email) {
+            return done(new Error("Google hesabında e-poçt tapılmadı!"), null);
+        }
 
         const fullname = profile.displayName || 'Google İstifadəçisi';
         const picture = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
@@ -148,29 +154,105 @@ passport.use(new GoogleStrategy({
     }
 }));
 
-passport.serializeUser((user, done) => done(null, user.id));
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await pool.query('SELECT id, fullname, email, is_admin, profile_picture FROM users WHERE id = $1', [id]);
-        if (user.rows.length === 0) return done(null, false);
+        if (user.rows.length === 0) {
+            return done(null, false);
+        }
         done(null, user.rows[0]);
     } catch (err) {
         done(err, null);
     }
 });
 
-// --- BASE ROUTING ---
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getStars(rating) {
+    const number = parseInt(rating);
+    if (isNaN(number) || number < 1 || number > 5) return 'Reytinq verilməyib';
+    return '★'.repeat(number) + '☆'.repeat(5 - number);
+}
+
+// ============================================================================
+// SYSTEM PROMPT DEFINITION
+// ============================================================================
+const SYSTEM_PROMPT = `
+Sənin adın ADA-dır. ADA sözünün mənası "Arzulara doğru Ağasiflə" deməkdir.
+Sən Ağasif Əliyevin yaratdığı ADA_GROUP çərçivəsində fəaliyyət göstərən peşəkar AI köməkçisən.
+ADA_GROUP Rəqəmsal həllər mərkəzi daxilində olan tətbiqlərdən biri də STİM-L-dir.
+STİM-L ADA_GROUP tərəfindən 2026-cı ildə istifadəyə buraxılmış şəxsi kurs tətbiqidir (www.stim-l.com və Play Store).
+Kursun sahibi və tədrisçi direktoru Cabir Baxşiyevdir (2015-ci ildə qurub, Lənkəranda anadan olub, Kompüter və informatika müəllimi, informatika kitabının müəllifidir).
+Ağasif Əliyev 2005-ci ildə Masallıda anadan olub, Lənkəran Dövlət Universitetinin İnformasiya texnologiyaları ixtisasında təhsil alıb, Full-Stack Developer-dir (Code-Academy, Skillwill, Codecloud məzunudur).
+
+Vacib Qaydalar:
+1. Söhbətin əvvəlki mesajlarını və konteksti DİQQƏTLƏ izlə. İstifadəçi adını və ya əvvəlki mövzunu soruşursa, tarixdən tapıb dəqiq cavab ver! "Adınızı bilmirəm" demək QADAĞANDIR!
+2. Özün və yaradıcıların haqqında yalnız istifadəçi birbaşa soruşduqda məlumat ver.
+3. İstifadəçi hansı dildə yazırsa, o dildə aydın, dəqiq və sürətli cavab ver.
+4. Kod suallarında işlək və praktik nümunələr ver.
+`;
+
+// ============================================================================
+// VIEW ROUTES & PAGE RENDERERS
+// ============================================================================
+app.get('/chat', async (req, res) => {
+    let chatHistory = [];
+    const isUserLoggedIn = req.isAuthenticated && req.isAuthenticated();
+
+    if (isUserLoggedIn && req.user?.email) {
+        try {
+            const result = await pool.query(
+                'SELECT user_message, ai_response FROM messages WHERE user_email = $1 ORDER BY id ASC',
+                [req.user.email]
+            );
+            chatHistory = result.rows;
+        } catch (e) {
+            console.error("Baza tarixçə xətası:", e);
+        }
+    } else {
+        // QONAQ İSTİFADƏÇİ: Səhifə yenilənəndə sol paneldəki tarixçə təmizlənir
+        req.session.chatHistoryList = [];
+        chatHistory = [];
+    }
+
+    res.render('chat', { user: req.user || null, chatHistory });
+});
+
 app.get('/', (req, res) => res.redirect('/chat'));
-app.get('/chat', (req, res) => res.render('chat', { user: req.user || null }));
 app.get('/login', (req, res) => req.isAuthenticated() ? res.redirect('/chat') : res.render('login', { errorMessage: null }));
 app.get('/register', (req, res) => req.isAuthenticated() ? res.redirect('/chat') : res.render('register', { errorMessage: null }));
+app.get('/ada-pro', (req, res) => res.render('adapro', { user: req.user || null }));
+app.get('/adapro', (req, res) => res.render('adapro', { user: req.user || null }));
+app.get('/help', (req, res) => res.render('help'));
+app.get('/gizlilik', (req, res) => res.render('gizlilik'));
+app.get('/fedback', (req, res) => res.render('fedback'));
+app.get('/geribildirim', (req, res) => res.render('geribildirim'));
 
+// --- AUTHENTICATION ENDPOINTS ---
 app.post('/register', async (req, res) => {
     const { fullname, email, password } = req.body;
-    if (!fullname || !email || !password) return res.render('register', { errorMessage: 'Bütün xanaları doldurun!' });
+    if (!fullname || !email || !password) {
+        return res.render('register', { errorMessage: 'Bütün xanaları doldurun!' });
+    }
     try {
         const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-        if (existingUser.rows.length > 0) return res.render('register', { errorMessage: 'Bu e-poçt ünvanı ilə artıq qeydiyyatdan keçilib!' });
+        if (existingUser.rows.length > 0) {
+            return res.render('register', { errorMessage: 'Bu e-poçt ünvanı ilə artıq qeydiyyatdan keçilib!' });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query('INSERT INTO users (fullname, email, password) VALUES ($1, $2, $3)', [fullname, email, hashedPassword]);
         res.redirect('/login');
@@ -181,14 +263,22 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res, next) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.render('login', { errorMessage: 'E-poçt və şifrə daxil edilməlidir!' });
+    if (!email || !password) {
+        return res.render('login', { errorMessage: 'E-poçt və şifrə daxil edilməlidir!' });
+    }
     try {
         const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userResult.rows.length === 0) return res.render('login', { errorMessage: 'Bu e-poçt ilə qeydiyyat tapılmadı!' });
+        if (userResult.rows.length === 0) {
+            return res.render('login', { errorMessage: 'Bu e-poçt ilə qeydiyyat tapılmadı!' });
+        }
         const user = userResult.rows[0];
-        if (user.password === 'GOOGLE_AUTH_USER') return res.render('login', { errorMessage: 'Bu hesab Google ilə yaradılıb.' });
+        if (user.password === 'GOOGLE_AUTH_USER') {
+            return res.render('login', { errorMessage: 'Bu hesab Google ilə yaradılıb.' });
+        }
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.render('login', { errorMessage: 'Şifrə yanlışdır!' });
+        if (!isMatch) {
+            return res.render('login', { errorMessage: 'Şifrə yanlışdır!' });
+        }
         req.logIn(user, (err) => err ? next(err) : res.redirect('/chat'));
     } catch (err) {
         res.render('login', { errorMessage: 'Xəta baş verdi, yenidən yoxlayın.' });
@@ -199,52 +289,17 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/register' }), (req, res) => res.redirect('/chat'));
 app.get('/logout', (req, res, next) => req.logout((err) => err ? next(err) : res.redirect('/login')));
 
-// --- MULTIMEDIA UNIFIED CHAT API ---
-// --- MULTIMEDIA UNIFIED CHAT API ---
+// ============================================================================
+// MAIN UNIFIED CHAT API ENDPOINT (LİMİTSİZ)
+// ============================================================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const currentUser =
-            req.user ||
-            req.session?.user ||
-            req.session?.passport?.user;
+        const currentUser = req.user || req.session?.user || req.session?.passport?.user;
+        const isUserLoggedIn = req.isAuthenticated && req.isAuthenticated();
+        const userEmail = isUserLoggedIn ? req.user.email : null;
 
-        const userId = currentUser?.id || currentUser?._id;
-
-        const isUserLoggedIn =
-            req.isAuthenticated && req.isAuthenticated();
-
-        const userEmail =
-            isUserLoggedIn ? req.user.email : null;
-
-            // ==========================================
-// GÜNLÜK AI LIMIT KONTROLU
-// ==========================================
-
-if (isUserLoggedIn && userId) {
-
-    const limitResult = await checkAndIncrementLimit(userId);
-
-if (!limitResult.allowed) {
-        return res.status(429).json({
-            type: 'limit',
-            error: 'Gündəlik AI sorğu limitiniz bitib. ADA Pro-ya keçid edərək limitsiz istifadə edə bilərsiniz.',
-            message: 'Gündəlik limitiniz tamamlanıb. Daha çox istifadə üçün ADA Pro-ya keçid edə bilərsiniz.',
-            currentRequests: limitResult.currentRequests,
-            maxLimit: limitResult.maxLimit,
-            redirectUrl: '/adapro' // <- Keçid üçün link əlavə olundu
-        });
-    }
-}
-
-        const message =
-            typeof req.body.message === 'string'
-                ? req.body.message.trim()
-                : '';
-
-        const image =
-            typeof req.body.image === 'string'
-                ? req.body.image
-                : null;
+        const message = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+        const image = typeof req.body.image === 'string' ? req.body.image : null;
 
         if (!message && !image) {
             return res.status(400).json({
@@ -253,548 +308,162 @@ if (!limitResult.allowed) {
             });
         }
 
-        /*
-        ============================================================
-        1. LIMIT YOXDUR
-        ============================================================
+        // --- 1. SİMVOL LİMİTİ (MAX 2000) ---
+        const MAX_CHAR_LIMIT = 2000;
+        if (message.length > MAX_CHAR_LIMIT) {
+            return res.status(400).json({
+                type: 'text',
+                reply: `⚠️ Mesajınız çox uzundur (${message.length} simvol). Zəhmət olmasa maksimum ${MAX_CHAR_LIMIT} simvol daxil edin.`
+            });
+        }
 
-        Burada əvvəlki:
-
-            maxLimit = 3
-            maxLimit = 2
-
-        kimi limitlər yoxdur.
-
-        OpenAI hesabının öz API/rate/billing limitləri
-        ayrıca qüvvədə qalır.
-        */
-
-        /*
-        ============================================================
-        2. ŞƏKİL + MƏTN
-        ============================================================
-        */
-
+        // --- 2. ŞƏKİL ANALİZİ VƏ YA REDAKTƏSİ ---
         if (image) {
-
-            /*
-            --------------------------------------------------------
-            Şəkil redaktəsi
-            --------------------------------------------------------
-            */
-
-            const editingWords = [
-                'redaktə',
-                'edit',
-                'dəyiş',
-                'dəyişdir',
-                'fon',
-                'background',
-                'rəng',
-                'rəngi',
-                'sil',
-                'əlavə et',
-                'əlavə',
-                'çıxart',
-                'təmizlə',
-                'professional',
-                'peşəkar',
-                'gözəlləşdir',
-                'keyfiyyət',
-                'quality',
-                'enhance',
-                'enhance et',
-                'kəs',
-                'crop',
-                'ölçü',
-                'resize',
-                'ağ fon',
-                'qara fon',
-                'şəffaf fon'
-            ];
-
-            const wantsEdit =
-                message &&
-                editingWords.some(word =>
-                    message.toLowerCase().includes(word)
-                );
-
-            /*
-            --------------------------------------------------------
-            Əgər istifadəçi şəkil göndərib və redaktə istəyirsə
-            --------------------------------------------------------
-            */
+            const editingWords = ['redaktə', 'edit', 'dəyiş', 'dəyişdir', 'fon', 'background', 'rəng', 'sil', 'əlavə et'];
+            const wantsEdit = message && editingWords.some(word => message.toLowerCase().includes(word));
 
             if (wantsEdit) {
-
                 try {
-
-                    /*
-                    OpenAI image editing üçün data URL qəbul olunur.
-                    */
+                    const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+                    const imgBuffer = Buffer.from(base64Data, 'base64');
+                    const pngBuffer = await sharp(imgBuffer).resize(1024, 1024, { fit: 'inside' }).png().toBuffer();
+                    const imageFile = await toFile(pngBuffer, 'image.png', { type: 'image/png' });
 
                     const result = await openai.images.edit({
-                        model: 'gpt-image-1',
-                        image: image,
-                        prompt: `
-Sən ADA AI üçün professional şəkil redaktə sistemisən.
-
-İstifadəçinin tələbini mümkün qədər dəqiq yerinə yetir.
-
-İstifadəçi tələbi:
-${message}
-
-Əsas qaydalar:
-
-- Mövcud şəklin əsas obyektini mümkün qədər qoruyub saxla.
-- İstifadəçi xüsusi dəyişiklik istəyirsə yalnız həmin dəyişikliklə
-  məhdudlaşma, tələb olunan nəticəni professional şəkildə hazırla.
-- Fon dəyişdirilməsi istənirsə fonu dəyiş.
-- Obyekt silinməsi istənirsə həmin obyekti sil.
-- Obyekt əlavə edilməsi istənirsə realistik şəkildə əlavə et.
-- Rəng düzəlişi istənirsə rəngləri professional şəkildə düzəlt.
-- Keyfiyyət artırılması istənirsə daha təmiz və professional görünüş yarat.
-- "professional et" kimi ümumi tələb varsa şəkli daha keyfiyyətli,
-  balanslı, təmiz və vizual olaraq professional et.
-- İnsan üzlərini lazımsız şəkildə dəyişmə.
-- Mətn varsa mümkün qədər qoruyub saxla.
-`,
-                        size: '1024x1024'
+                        model: 'dall-e-2',
+                        image: imageFile,
+                        prompt: message,
+                        n: 1,
+                        size: '1024x1024',
+                        response_format: 'b64_json'
                     });
 
-                    const base64Image =
-                        result.data?.[0]?.b64_json;
-
-                    if (!base64Image) {
-                        throw new Error(
-                            'OpenAI redaktə olunmuş şəkil qaytarmadı.'
-                        );
-                    }
-
-                    const outputImage =
-                        `data:image/png;base64,${base64Image}`;
-
-                    const responseData = {
+                    const base64Output = result.data?.[0]?.b64_json;
+                    const outputImage = `data:image/png;base64,${base64Output}`;
+                    return res.json({
                         type: 'image',
-                        reply:
-                            `Şəkil istəyinizə uyğun olaraq redaktə edildi.\n\n` +
-                            `![Redaktə olunmuş şəkil](${outputImage})`,
+                        reply: `Şəkil redaktə edildi.\n\n![Redaktə olunmuş şəkil](${outputImage})`,
                         image: outputImage
-                    };
-
-                    if (isUserLoggedIn && userEmail) {
-                        try {
-                            await pool.query(
-                                `
-                                INSERT INTO messages
-                                (user_email, user_message, ai_response)
-                                VALUES ($1, $2, $3)
-                                `,
-                                [
-                                    userEmail,
-                                    message || '[Şəkil]',
-                                    responseData.reply
-                                ]
-                            );
-                        } catch (dbErr) {
-                            console.error(
-                                'DB mesaj saxlama xətası:',
-                                dbErr
-                            );
-                        }
-                    }
-
-                    return res.json(responseData);
-
-                } catch (imageError) {
-
-                    console.error(
-                        'AI şəkil redaktə xətası:',
-                        imageError
-                    );
-
-                    return res.status(500).json({
-                        type: 'error',
-                        error:
-                            'Şəkil redaktə edilərkən xəta baş verdi: ' +
-                            (imageError.message || 'Naməlum xəta')
                     });
+                } catch (err) {
+                    console.error('Şəkil redaktə xətası:', err.message);
+                    return res.status(500).json({ type: 'text', reply: 'Şəkli redaktə edərkən xəta baş verdi.' });
                 }
             }
 
-            /*
-            --------------------------------------------------------
-            Sadəcə şəkil göndərilibsə
-            --------------------------------------------------------
-            */
-
-            if (!message) {
-
-                try {
-
-                    const response = await openai.responses.create({
-                        model: 'gpt-5.6-luna',
-
-                        input: [
-                            {
-                                role: 'user',
-                                content: [
-                                    {
-                                        type: 'input_text',
-                                        text: `
-Bu şəkli ətraflı analiz et.
-
-Şəkildə nə olduğunu izah et.
-Görünən obyektləri təsvir et.
-Əgər şəkildə mətn varsa oxu.
-Şəkil haqqında istifadəçiyə faydalı məlumat ver.
-`
-                                    },
-                                    {
-                                        type: 'input_image',
-                                        image_url: image
-                                    }
-                                ]
-                            }
-                        ]
-                    });
-
-                    const reply =
-                        response.output_text ||
-                        'Şəkli analiz etmək mümkün olmadı.';
-
-                    const responseData = {
-                        type: 'text',
-                        reply
-                    };
-
-                    if (isUserLoggedIn && userEmail) {
-                        await pool.query(
-                            `
-                            INSERT INTO messages
-                            (user_email, user_message, ai_response)
-                            VALUES ($1, $2, $3)
-                            `,
-                            [
-                                userEmail,
-                                '[Şəkil analizi]',
-                                reply
-                            ]
-                        );
-                    }
-
-                    return res.json(responseData);
-
-                } catch (visionError) {
-
-                    console.error(
-                        'Şəkil analiz xətası:',
-                        visionError
-                    );
-
-                    return res.status(500).json({
-                        error:
-                            'Şəkil analiz edilərkən xəta baş verdi.'
-                    });
-                }
-            }
-
-            /*
-            --------------------------------------------------------
-            Şəkil + adi sual
-            --------------------------------------------------------
-            */
-
-            try {
-
-                const response = await openai.responses.create({
-                    model: 'gpt-5.6-luna',
-
-                    input: [
-                        {
-                            role: 'system',
-                            content: `
-Sənin adın ADA-dır.
-
-Sən ADA Group tərəfindən yaradılmış
-peşəkar AI köməkçisisən.
-
-İstifadəçinin sualına dəqiq və faydalı cavab ver.
-
-Azərbaycan dilində sual verilirsə Azərbaycan dilində,
-ingilis dilində verilirsə ingilis dilində,
-rus dilində verilirsə rus dilində cavab ver.
-
-Şəkildəki məlumatı nəzərə al.
-`
-                        },
-                        {
-                            role: 'user',
-                            content: [
-                                {
-                                    type: 'input_text',
-                                    text: message
-                                },
-                                {
-                                    type: 'input_image',
-                                    image_url: image
-                                }
-                            ]
-                        }
-                    ]
-                });
-
-                const reply =
-                    response.output_text ||
-                    'Cavab yaratmaq mümkün olmadı.';
-
-                const responseData = {
-                    type: 'text',
-                    reply
-                };
-
-                if (isUserLoggedIn && userEmail) {
-                    await pool.query(
-                        `
-                        INSERT INTO messages
-                        (user_email, user_message, ai_response)
-                        VALUES ($1, $2, $3)
-                        `,
-                        [userEmail, message, reply]
-                    );
-                }
-
-                return res.json(responseData);
-
-            } catch (visionChatError) {
-
-                console.error(
-                    'Şəkilli chat xətası:',
-                    visionChatError
-                );
-
-                return res.status(500).json({
-                    error:
-                        'Şəkilli sorğu emal edilərkən xəta baş verdi.'
-                });
-            }
-        }
-
-        /*
-        ============================================================
-        3. ŞƏKİL YARATMA
-        ============================================================
-        */
-
-        const creationRegex = /^(şəkil|foto|şəkli|resm|picture|image|logo|photo)\s+(yarat|düzəlt|çək|generate|draw|hazırla)/i;
-
-        const wantsImage =
-            creationRegex.test(message) ||
-            /^yarat\s+/i.test(message) ||
-            /^generate\s+/i.test(message) ||
-            /şəkil yarat/i.test(message);
-
-        if (wantsImage) {
-
-            try {
-
-                const result = await openai.images.generate({
-                    model: 'gpt-image-1',
-                    prompt: message,
-                    size: '1024x1024'
-                });
-
-                const base64Image =
-                    result.data?.[0]?.b64_json;
-
-                if (!base64Image) {
-                    throw new Error(
-                        'Şəkil yaradılmadı.'
-                    );
-                }
-
-                const imageUrl =
-                    `data:image/png;base64,${base64Image}`;
-
-                const responseData = {
-                    type: 'image',
-                    reply:
-                        `İstədiyiniz şəkil yaradıldı.\n\n` +
-                        `![Yaradılmış şəkil](${imageUrl})`,
-                    image: imageUrl
-                };
-
-                if (isUserLoggedIn && userEmail) {
-                    await pool.query(
-                        `
-                        INSERT INTO messages
-                        (user_email, user_message, ai_response)
-                        VALUES ($1, $2, $3)
-                        `,
-                        [
-                            userEmail,
-                            message,
-                            responseData.reply
-                        ]
-                    );
-                }
-
-                return res.json(responseData);
-
-            } catch (imageCreateError) {
-
-                console.error(
-                    'Şəkil yaratma xətası:',
-                    imageCreateError
-                );
-
-                return res.status(500).json({
-                    error:
-                        'Şəkil yaradılarkən xəta baş verdi.'
-                });
-            }
-        }
-
-        /*
-        ============================================================
-        4. ADİ SUAL
-        ============================================================
-        */
-
-        try {
-
-            const response = await openai.responses.create({
-                model: 'gpt-5.6-luna',
-
-                tools: [
-                    {
-                        type: 'web_search'
-                    }
+            // Şəkil Analizi (gpt-4o-mini)
+            const visionResponse = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: SYSTEM_PROMPT },
+                    { role: 'user', content: [{ type: 'text', text: message || 'Bu şəkli analiz et.' }, { type: 'image_url', image_url: { url: image } }] }
                 ],
-
-                input: [
-                    {
-                        role: 'system',
-                        content: `
-Sənin adın ADA-dır.
-
-
-  ADA sözünün mənası Arzulara doğru Ağasiflə deməkdir 
-
-
-Sən Ağasif Əliyevin yaratdığı
-ADA_GROUP çərçivəsində fəaliyyət göstərən
-peşəkar AI köməkçisən.ADA_GROUP Rəqəmsal həllər mərkəzi daxilində olan tətbiqlərdən biridə STİM-L dir.
-
-STİM-L ADA_GROUP tərəfindən 2026-ci ildə istifadəyə buraxılmış şəxsi kurs tətbiqidir www.stim-l.com saytından və ya play storedən tətbiqə baxa bilərsiniz
-kursun sahibi Cabir Baxşiyevdir o 2015 ci ildə kursu yaratmışdır və hazırda kursun rəhbəridir və tədrisçi direktorudur bununıla yanaşı Kompüter və informatika müəllimidir + informatika kitabının müəllifidir.  Cabir Baxşiyev  Azərbaycan/Lənkəranda anadan olmuşdur.
-
-Ağasif Əliyev 2005 ci ildə Azərbaycan/Masallıda anadan olmuş Lənkəran dövlət universitetinin İnformasiya texnologiyaları ixtisasında təhsil almışdır hazırda
-Full-Stack Developer kimi fəaliiyət göstərir .
-Ağasif Code-Academy (frontend and backend) , Skillwill(proqramming from zero course) , Codecloud (certificate of participant) vəşs kimi kursları bitirmişdir.
-
-
-İstifadəçinin sualına mümkün qədər dəqiq,
-aydın və faydalı cavab ver.
-
-İstifadəçi hansı dildə yazırsa həmin dildə cavab ver.
-
-ada sozununun ADA Universiteti ilə əlaqəsi yoxdur bu melumat her sefer verme amma lazimi yerde yaz .
-
-Cari və dəyişən məlumat tələb edən suallarda
-web search imkanından istifadə et.
-
-Məsələn:
-
-- xəbərlər
-- hava
-- valyuta
-- idman
-- texnologiya xəbərləri
-- şirkət məlumatları
-- qiymətlər
-- son hadisələr
-- aktual qanunlar
-- cari tarixlə bağlı məlumatlar
-
-Məlumatı uydurma.
-Əmin olmadığın məlumatı fakt kimi təqdim etmə.
-
-Kod suallarında işlək və praktik nümunələr ver.
-`
-                    },
-                    {
-                        role: 'user',
-                        content: message
-                    }
-                ]
+                max_tokens: 1000
             });
-
-            const reply =
-                response.output_text ||
-                'Cavab yaratmaq mümkün olmadı.';
-
-            const responseData = {
-                type: 'text',
-                reply
-            };
-
-            if (isUserLoggedIn && userEmail) {
-
-                try {
-
-                    await pool.query(
-                        `
-                        INSERT INTO messages
-                        (user_email, user_message, ai_response)
-                        VALUES ($1, $2, $3)
-                        `,
-                        [
-                            userEmail,
-                            message,
-                            reply
-                        ]
-                    );
-
-                } catch (dbErr) {
-
-                    console.error(
-                        'Mesaj DB-yə yazılmadı:',
-                        dbErr
-                    );
-                }
-            }
-
-            return res.json(responseData);
-
-        } catch (aiError) {
-
-            console.error(
-                'OpenAI API xətası:',
-                aiError
-            );
-
-            return res.status(500).json({
-                error:
-                    'ADA AI hazırda cavab verə bilmədi. Bir neçə saniyə sonra yenidən cəhd edin.'
-            });
+            const reply = visionResponse.choices[0]?.message?.content || 'Şəkli analiz etmək mümkün olmadı.';
+            return res.json({ type: 'text', reply });
         }
+
+        // --- 3. ŞƏKİL YARATMA (DALL-E 3) ---
+        const creationRegex = /^(şəkil|foto|şəkli|resm|rəsm|picture|image|logo|photo)\s+(yarat|düzəlt|çək|generate|draw|hazırla)/i;
+        if (creationRegex.test(message) || /^yarat\s+/i.test(message)) {
+            try {
+                const imgResult = await openai.images.generate({
+                    model: 'dall-e-3',
+                    prompt: message,
+                    n: 1,
+                    size: '1024x1024',
+                    response_format: 'b64_json'
+                });
+                const base64Image = imgResult.data?.[0]?.b64_json;
+                const imageUrl = `data:image/png;base64,${base64Image}`;
+                return res.json({
+                    type: 'image',
+                    reply: `İstədiyiniz şəkil yaradıldı.\n\n![Yaradılmış şəkil](${imageUrl})`,
+                    image: imageUrl
+                });
+            } catch (err) {
+                return res.status(500).json({ type: 'text', reply: 'Şəkil yaradılarkən xəta baş verdi.' });
+            }
+        }
+
+        // --- 4. SÖHBƏT TARİXÇƏSİ (KONTEKST YADDAŞI) ---
+        let conversationHistory = [];
+
+        if (isUserLoggedIn && userEmail) {
+            try {
+                const historyRes = await pool.query(
+                    'SELECT user_message, ai_response FROM messages WHERE user_email = $1 ORDER BY id DESC LIMIT 8',
+                    [userEmail]
+                );
+                const pastRows = historyRes.rows.reverse();
+                for (const row of pastRows) {
+                    if (row.user_message) conversationHistory.push({ role: 'user', content: row.user_message });
+                    if (row.ai_response) conversationHistory.push({ role: 'assistant', content: row.ai_response });
+                }
+            } catch (e) {
+                console.error("Tarixçə oxunma xətası:", e);
+            }
+        } else {
+            if (!req.session.chatHistory) req.session.chatHistory = [];
+            conversationHistory = req.session.chatHistory.slice(-8);
+        }
+
+        // --- 5. OPENAI CHAT COMPLETION ---
+        const chatCompletion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                ...conversationHistory,
+                { role: 'user', content: message }
+            ],
+            temperature: 0.7,
+            max_tokens: 1500
+        });
+
+        const reply = chatCompletion.choices[0]?.message?.content || 'Cavab yaratmaq mümkün olmadı.';
+
+        // --- 6. MESAJIN SAXLANMASI VƏ SOL PANEL SİYAHISI ---
+        if (isUserLoggedIn && userEmail) {
+            try {
+                await pool.query(
+                    'INSERT INTO messages (user_email, user_message, ai_response) VALUES ($1, $2, $3)',
+                    [userEmail, message, reply]
+                );
+            } catch (e) {
+                console.error("Baza mesaj saxlama xətası:", e);
+            }
+        } else {
+            if (!req.session.chatHistory) req.session.chatHistory = [];
+            req.session.chatHistory.push({ role: 'user', content: message });
+            req.session.chatHistory.push({ role: 'assistant', content: reply });
+
+            if (!req.session.chatHistoryList) req.session.chatHistoryList = [];
+            req.session.chatHistoryList.push({ user_message: message, ai_response: reply });
+        }
+
+        let currentList = [];
+        if (isUserLoggedIn && userEmail) {
+            const allRes = await pool.query('SELECT user_message, ai_response FROM messages WHERE user_email = $1 ORDER BY id ASC', [userEmail]);
+            currentList = allRes.rows;
+        } else {
+            currentList = req.session.chatHistoryList;
+        }
+
+        return res.json({ type: 'text', reply, chatHistory: currentList });
 
     } catch (error) {
-
-        console.error(
-            'Ümumi /api/chat xətası:',
-            error
-        );
-
+        console.error('Ümumi /api/chat xətası:', error);
         return res.status(500).json({
-            error:
-                'Serverdə xəta baş verdi.'
+            type: 'text',
+            reply: 'ADA AI hazırda cavab verə bilmədi. Bir neçə saniyə sonra yenidən cəhd edin.'
         });
     }
 });
 
-// --- ADMIN PANEL ROUTLARI ---
+// ============================================================================
+// ADMIN PANEL ROUTES
+// ============================================================================
 app.get('/ddaam', ensureAdmin, async (req, res) => {
     try {
         const [usersCount, messagesCount, usersList, allMessages] = await Promise.all([
@@ -835,551 +504,73 @@ app.post('/ddaam/users/:id/delete', ensureAdmin, async (req, res) => {
 
 app.post('/ddaam/chats/:id/delete', ensureAdmin, async (req, res) => {
     try {
-        await pool.query('DELETE FROM chats WHERE id = $1', [req.params.id]);
+        await pool.query('DELETE FROM messages WHERE id = $1', [req.params.id]);
         res.redirect('/ddaam');
     } catch (err) {
         res.status(500).send("Söhbət silinmədi");
     }
 });
 
-// --- ŞİFRƏ BƏRPASI (PASSWORD RESET) ---
+// ============================================================================
+// PASSWORD RESET & FEEDBACK ROUTES
+// ============================================================================
 app.get('/reset-password', (req, res) => {
     res.render('reset-password', { errorMessage: null, message: null });
 });
 
 app.post('/reset-password', async (req, res) => {
     const { email } = req.body;
-
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-
-    const resetLink = `http://localhost:3000/new-password?email=${email}`;
-
-    const mailOptions = {
-        from: `ADA AI <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Şifrənin bərpası - ADA AI',
-        html: `<h3>Şifrənizi sıfırlamaq üçün aşağıdakı linkə klikləyin:</h3>
-               <a href="${resetLink}">Şifrəni sıfırla</a>`
-    };
-
+    const resetLink = `http://localhost:3000/new-password?email=${encodeURIComponent(email)}`;
     try {
-        await transporter.sendMail(mailOptions);
-        return res.render('reset-password', {
-            message: 'Sıfırlama linki e-poçtunuza göndərildi!',
-            errorMessage: null
+        await transporter.sendMail({
+            from: `ADA AI <${process.env.GMAIL_USER}>`,
+            to: email,
+            subject: 'Şifrənin bərpası - ADA AI',
+            html: `<h3>Şifrənizi sıfırlamaq üçün klikləyin:</h3><a href="${resetLink}">Şifrəni sıfırla</a>`
         });
-    } catch (error) {
-        console.error(error);
-        return res.render('reset-password', {
-            errorMessage: 'E-poçt göndərilərkən xəta baş verdi.',
-            message: null
-        });
+        res.render('reset-password', { message: 'Sıfırlama linki e-poçtunuza göndərildi!', errorMessage: null });
+    } catch (e) {
+        res.render('reset-password', { errorMessage: 'E-poçt göndərilərkən xəta baş verdi.', message: null });
     }
 });
 
 app.get('/new-password', (req, res) => {
-    const { email } = req.query;
-    res.render('new-password', { email });
+    res.render('new-password', { email: req.query.email });
 });
 
 app.post('/new-password', async (req, res) => {
     try {
         const { email, newPassword } = req.body;
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-        await prisma.user.update({
-            where: { email: email },
-            data: { password: hashedPassword }
-        });
-
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE users SET password = $1 WHERE email = $2', [hashedPassword, email]);
         res.redirect('/login');
-    } catch (error) {
-        console.error(error);
+    } catch (e) {
         res.status(500).send('Şifrə yenilənərkən xəta baş verdi.');
     }
 });
 
-// --- DIGƏR SƏHİFƏLƏR ---
-app.get('/ada-pro', (req, res) => {
-    res.render('adapro', { user: req.user || null });
-});
-app.get('/adapro', (req, res) => {
-    res.render('adapro', { user: req.user || null });
-});
-
-app.get('/limit', async (req, res) => {
-    const currentUser = req.user || req.session?.user || req.session?.passport?.user;
-    
-    let userLimit = 0;
-    
-    if (currentUser && currentUser.id) {
-        try {
-            const result = await pool.query('SELECT * FROM users WHERE id = $1', [currentUser.id]);
-            if (result.rows.length > 0) {
-                userLimit = result.rows[0].daily_requests || result.rows[0].requestCount || result.rows[0].query_count || 0;
-            }
-        } catch (err) {
-            console.error("Limit oxunarkən xəta:", err);
-        }
-    }
-
-    const maxLimit = 10; // Qeydiyyatlı istifadəçi limiti
-    const percentage = Math.min((userLimit / maxLimit) * 10, 10);
-
-    res.render('limit', { 
-        user: currentUser || null,
-        userLimit: userLimit,
-        maxLimit: maxLimit,
-        percentage: percentage 
-    });
-});
-
-// İstifadəçinin limitini yoxlayan və 1 vahid artıran funksiya
-async function checkAndIncrementLimit(userId) {
-    if (!userId) return { allowed: true }; // Qonaqlar üçün (və ya istəyə görə məhdudlaşdıra bilərsiniz)
-
-    try {
-        // 1. İstifadəçinin cari məlumatlarını çəkirik
-        const userRes = await pool.query('SELECT daily_requests FROM users WHERE id = $1', [userId]);
-        if (userRes.rows.length === 0) return { allowed: false };
-
-        const currentRequests = userRes.rows[0].daily_requests || 0;
-        const maxLimit = 10; // Qeydiyyatlı istifadəçi limiti (və ya bazadan oxuya bilərsiniz)
-
-        // 2. Əgər limit dolubsa
-        if (currentRequests >= maxLimit) {
-            return { allowed: false, currentRequests, maxLimit };
-        }
-
-        // 3. Limit hələ dolmayıbsa, 1 artırırıq
-        const updateRes = await pool.query(
-            'UPDATE users SET daily_requests = COALESCE(daily_requests, 0) + 1 WHERE id = $1 RETURNING daily_requests', 
-            [userId]
-        );
-
-        return { 
-            allowed: true, 
-            currentRequests: updateRes.rows[0].daily_requests, 
-            maxLimit 
-        };
-    } catch (err) {
-        console.error("Limit yoxlanılarkən xəta:", err);
-        return { allowed: true }; // Xəta zamanı sistem dayanmasın deyə icazə veririk
-    }
-};
-
-
-app.get('/help', (req, res) => {
-    res.render('help');
-});
-
-
-app.get('/gizlilik', (req, res) => {
-    res.render('gizlilik');
-});
-
-app.get('/fedback', (req, res) => {
-    res.render('fedback');
-});
-
-// ===============================
-// GMAIL TRANSPORTER
-// ===============================
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
-    }
-});
-
-
-// ===============================
-// GMAIL CONNECTION TEST
-// ===============================
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('❌ Gmail bağlantısı uğursuz oldu:');
-        console.error(error.message);
-    } else {
-        console.log('✅ Gmail SMTP bağlantısı hazırdır.');
-    }
-});
-
-
-// ===============================
-// GERİBİLDİRİM SƏHİFƏSİ
-// ===============================
-
-app.get('/geribildirim', (req, res) => {
-    res.render('geribildirim');
-});
-
-
-// ===============================
-// GERİBİLDİRİM GÖNDƏR
-// ===============================
-
 app.post('/geribildirim', async (req, res) => {
-
     try {
-
-        const {
-            feedbackType,
-            feedbackSubject,
-            rating,
-            feedbackMessage,
-            feedbackEmail
-        } = req.body;
-
-
-        // -------------------------------
-        // VALIDATION
-        // -------------------------------
-
+        const { feedbackType, feedbackSubject, rating, feedbackMessage, feedbackEmail } = req.body;
         if (!feedbackMessage || feedbackMessage.trim().length < 5) {
-            return res.status(400).json({
-                success: false,
-                message: 'Zəhmət olmasa geribildiriminizi yazın.'
-            });
+            return res.status(400).json({ success: false, message: 'Geribildiriminizi yazın.' });
         }
-
-
-        const type = feedbackType || 'Ümumi rəy';
-        const subject = feedbackSubject || 'Mövzu qeyd edilməyib';
-        const userRating = rating || 'Verilməyib';
-        const email = feedbackEmail || 'Email qeyd edilməyib';
-
-        const message = feedbackMessage.trim();
-
-
-        // -------------------------------
-        // HTML EMAIL
-        // -------------------------------
-
-        const emailHTML = `
-<!DOCTYPE html>
-<html lang="az">
-
-<head>
-    <meta charset="UTF-8">
-</head>
-
-<body style="
-    margin:0;
-    padding:30px;
-    background:#f1f5f9;
-    font-family:Arial,Helvetica,sans-serif;
-">
-
-    <div style="
-        max-width:700px;
-        margin:auto;
-        background:#ffffff;
-        border-radius:18px;
-        overflow:hidden;
-        box-shadow:0 10px 30px rgba(0,0,0,0.08);
-    ">
-
-        <!-- HEADER -->
-
-        <div style="
-            background:linear-gradient(135deg,#2563eb,#4f46e5);
-            padding:30px;
-            color:#ffffff;
-        ">
-
-            <h1 style="
-                margin:0;
-                font-size:26px;
-            ">
-                ADA Student AI
-            </h1>
-
-            <p style="
-                margin:8px 0 0;
-                opacity:.9;
-                font-size:15px;
-            ">
-                Yeni geribildirim
-            </p>
-
-        </div>
-
-
-        <!-- CONTENT -->
-
-        <div style="padding:30px;">
-
-            <div style="
-                margin-bottom:22px;
-                padding:18px;
-                background:#f8fafc;
-                border-radius:12px;
-            ">
-
-                <strong>Geribildirim növü</strong>
-
-                <div style="
-                    margin-top:7px;
-                    color:#475569;
-                ">
-                    ${escapeHtml(type)}
-                </div>
-
-            </div>
-
-
-            <div style="
-                margin-bottom:22px;
-                padding:18px;
-                background:#f8fafc;
-                border-radius:12px;
-            ">
-
-                <strong>Mövzu</strong>
-
-                <div style="
-                    margin-top:7px;
-                    color:#475569;
-                ">
-                    ${escapeHtml(subject)}
-                </div>
-
-            </div>
-
-
-            <div style="
-                margin-bottom:22px;
-                padding:18px;
-                background:#f8fafc;
-                border-radius:12px;
-            ">
-
-                <strong>Reytinq</strong>
-
-                <div style="
-                    margin-top:8px;
-                    font-size:20px;
-                ">
-                    ${getStars(userRating)}
-                </div>
-
-            </div>
-
-
-            <div style="
-                margin-bottom:22px;
-                padding:18px;
-                background:#f8fafc;
-                border-radius:12px;
-            ">
-
-                <strong>İstifadəçi emaili</strong>
-
-                <div style="
-                    margin-top:7px;
-                    color:#475569;
-                ">
-                    ${escapeHtml(email)}
-                </div>
-
-            </div>
-
-
-            <div style="
-                padding:20px;
-                background:#eff6ff;
-                border-left:4px solid #2563eb;
-                border-radius:10px;
-            ">
-
-                <strong style="color:#1e3a8a;">
-                    Geribildirim
-                </strong>
-
-                <p style="
-                    margin:12px 0 0;
-                    color:#334155;
-                    line-height:1.7;
-                    white-space:pre-wrap;
-                ">
-                    ${escapeHtml(message)}
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <!-- FOOTER -->
-
-        <div style="
-            padding:20px 30px;
-            background:#f8fafc;
-            border-top:1px solid #e2e8f0;
-            color:#64748b;
-            font-size:13px;
-        ">
-
-            Bu mesaj ADA Student AI platformunun
-            geribildirim sistemi tərəfindən göndərilib.
-
-        </div>
-
-    </div>
-
-</body>
-</html>
-`;
-
-
-        // -------------------------------
-        // EMAIL SUBJECT
-        // -------------------------------
-
-        const mailSubject =
-            `ADA Student AI | Yeni Geribildirim | ${type}`;
-
-
-        // -------------------------------
-        // SEND EMAIL
-        // -------------------------------
-
         await transporter.sendMail({
-
             from: `"ADA Student AI" <${process.env.GMAIL_USER}>`,
-
             to: process.env.GMAIL_USER,
-
-            replyTo:
-                feedbackEmail && feedbackEmail.includes('@')
-                    ? feedbackEmail
-                    : undefined,
-
-            subject: mailSubject,
-
-            html: emailHTML
+            subject: `ADA Student AI | Yeni Geribildirim`,
+            text: feedbackMessage
         });
-
-
-        // -------------------------------
-        // SUCCESS
-        // -------------------------------
-
-        console.log('✅ Geribildirim Gmail-ə göndərildi.');
-
-        return res.json({
-            success: true,
-            message: 'Geribildiriminiz uğurla göndərildi.'
-        });
-
-
-    } catch (error) {
-
-        console.error('❌ Geribildirim göndərilərkən xəta:');
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: 'Geribildirim göndərilmədi. Zəhmət olmasa bir qədər sonra yenidən cəhd edin.'
-        });
-
+        res.json({ success: true, message: 'Geribildiriminiz uğurla göndərildi.' });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Xəta baş verdi.' });
     }
-
 });
 
-
-// ===============================
-// HELPER FUNCTIONS
-// ===============================
-
-function escapeHtml(value) {
-
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-
-}
-
-
-function getStars(rating) {
-
-    const number = parseInt(rating);
-
-    if (isNaN(number) || number < 1 || number > 5) {
-        return 'Reytinq verilməyib';
-    }
-
-    return '★'.repeat(number) + '☆'.repeat(5 - number);
-
-}
-
-
-
-
-import { toFile } from 'openai';
-
-app.post('/api/chat-image', upload.single('file'), async (req, res) => {
-  try {
-    const prompt = req.body.prompt || req.body.message;
-    const file = req.file;
-
-    let base64Image;
-
-    if (file) {
-      // Şəkil yüklənibsə redaktə edirik
-      const openaiFile = await toFile(file.buffer, file.originalname);
-      const response = await openai.images.edit({
-        image: openaiFile,
-        prompt: prompt || "Bu şəkli dəyiş",
-        n: 1,
-        size: "1024x1024"
-      });
-      
-      const imageUrl = response.data[0].url;
-      const imageRes = await fetch(imageUrl);
-      const arrayBuffer = await imageRes.arrayBuffer();
-      base64Image = Buffer.from(arrayBuffer).toString('base64');
-
-    } else {
-      // DALL-E 3 ilə sıfırdan şəkil yaradırıq
-      const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024"
-      });
-
-      const imageUrl = response.data[0].url;
-      const imageRes = await fetch(imageUrl);
-      const arrayBuffer = await imageRes.arrayBuffer();
-      base64Image = Buffer.from(arrayBuffer).toString('base64');
-    }
-
-    // Hazır base64 şəkli frontend-ə göndəririk
-    res.json({ success: true, imageBase64: base64Image });
-
-  } catch (error) {
-    console.error("Xəta:", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// --- 7. SERVER LAUNCH (Həm lokal, həm qlobal serverlər üçün uyğun) ---
+// ============================================================================
+// SERVER LAUNCH
+// ============================================================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server işləyir: port ${PORT}`);
+    console.log(`🚀 Server işləyir: port ${PORT}`);
 });
